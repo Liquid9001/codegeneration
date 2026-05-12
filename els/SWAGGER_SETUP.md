@@ -11,7 +11,7 @@ This document provides a complete guide to accessing and using the Swagger UI fo
 Navigate to the project directory and run:
 
 ```bash
-cd C:\Users\enesb\Videos\github\codegeneration\els
+cd C:\Users\(user)\Videos\github\codegeneration\els
 ./mvnw spring-boot:run
 ```
 
