@@ -1,52 +1,152 @@
 package nl.codegeneratie.els.service;
 
+import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
+import nl.codegeneratie.els.dtos.AccountDTO;
+import nl.codegeneratie.els.dtos.CustomerSearchDTO;
+import nl.codegeneratie.els.dtos.TokenResponseDTO;
 import nl.codegeneratie.els.dtos.UserDTO;
+import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
+import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, AccountRepository accountRepository) {
         this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
     }
 
-    public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+    public List<UserWithAccountsDTO> getAllUsers(Integer offset, Integer limit) {
+        List<User> users = userRepository.findAll();
+        int safeOffset = offset == null ? 0 : Math.max(offset, 0);
+        int safeLimit = limit == null ? users.size() : Math.max(limit, 1);
+        int end = Math.min(safeOffset + safeLimit, users.size());
+        if (safeOffset >= users.size()) {
+            return List.of();
+        }
+        return users.subList(safeOffset, end)
+                .stream()
+                .map(this::convertToUserWithAccountsDTO)
+                .collect(Collectors.toList());
     }
 
     public UserDTO createUser(UserDTO userDTO) {
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
+        user.setPassword_hash(passwordEncoder.encode(userDTO.getPassword() == null ? "" : userDTO.getPassword()));
+        user.setApproved(false);
+        if (user.getRole() == null) {
+            user.setRole(0);
+        }
+        if (user.getCreated_at() == null) {
+            user.setCreated_at(LocalDateTime.now());
+        }
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }
 
-    public UserDTO updateUser(Long id, UserDTO userDTO) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        BeanUtils.copyProperties(userDTO, user, "id");
-        User updatedUser = userRepository.save(user);
-        return convertToDTO(updatedUser);
+    public UserWithAccountsDTO getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return convertToUserWithAccountsDTO(user);
     }
 
-    public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        userRepository.delete(user);
+    public TokenResponseDTO login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        boolean valid = passwordEncoder.matches(password == null ? "" : password, user.getPassword_hash());
+        if (!valid && user.getPassword_hash() != null) {
+            valid = user.getPassword_hash().equals(password);
+        }
+
+        if (!valid) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return new TokenResponseDTO("bearer_" + UUID.randomUUID());
+    }
+
+    public UserWithAccountsDTO approveUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        user.setApproved(true);
+        userRepository.save(user);
+
+        List<Account> existing = accountRepository.findByCustomerId(userId);
+        if (existing.isEmpty()) {
+            accountRepository.save(buildDefaultAccount(userId, "checking"));
+            accountRepository.save(buildDefaultAccount(userId, "savings"));
+        }
+
+        return convertToUserWithAccountsDTO(user);
+    }
+
+    public List<CustomerSearchDTO> searchCustomers(String firstName, String lastName) {
+        List<User> users = userRepository.findByFirstAndLastName(firstName, lastName);
+        List<CustomerSearchDTO> results = new ArrayList<>();
+        for (User user : users) {
+            List<Account> accounts = accountRepository.findByCustomerId(user.getId());
+            for (Account account : accounts) {
+                results.add(new CustomerSearchDTO(user.getId(), user.getFirst_name(), user.getLast_name(), account.getIban()));
+            }
+        }
+        return results;
     }
 
     private UserDTO convertToDTO(User user) {
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(user, userDTO);
+        userDTO.setPassword(null);
         return userDTO;
+    }
+
+    private UserWithAccountsDTO convertToUserWithAccountsDTO(User user) {
+        UserWithAccountsDTO dto = new UserWithAccountsDTO();
+        BeanUtils.copyProperties(user, dto);
+        dto.setPassword(null);
+        List<AccountDTO> accounts = accountRepository.findByCustomerId(user.getId())
+                .stream()
+                .map(this::toAccountDTO)
+                .collect(Collectors.toList());
+        dto.setAccounts(accounts);
+        return dto;
+    }
+
+    private AccountDTO toAccountDTO(Account account) {
+        AccountDTO dto = new AccountDTO();
+        BeanUtils.copyProperties(account, dto);
+        return dto;
+    }
+
+    private Account buildDefaultAccount(Long userId, String accountType) {
+        Account account = new Account();
+        account.setCustomer_id(userId);
+        account.setIban("NL" + (90 + (int) (Math.random() * 10)) + "ELS" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
+        account.setAccount_type(accountType);
+        account.setBalance(BigDecimal.ZERO);
+        account.setAbsolute_transfer_limit(new BigDecimal("1000.00"));
+        account.setDaily_transfer_limit(new BigDecimal("5000.00"));
+        account.setActive(true);
+        account.setCreated_at(LocalDateTime.now());
+        return account;
     }
 }
 

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nl.codegeneratie.els.dtos.TransactionDTO;
 import nl.codegeneratie.els.service.TransactionService;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -27,31 +29,35 @@ public class TransactionController {
 
     @GetMapping
     @Operation(
-            summary = "Get all transactions",
-            description = "Retrieve a list of all transactions in the system"
+            summary = "Get all transactions (employee only)",
+            security = @SecurityRequirement(name = "application", scopes = {"read"})
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Transactions retrieved successfully",
+                    description = "List of transactions",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TransactionDTO.class)
                     )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public List<TransactionDTO> getAllTransactions() {
-        return transactionService.getAllTransactions();
+    public List<TransactionDTO> getAllTransactions(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(name = "start_date", required = false) LocalDateTime startDate,
+            @RequestParam(name = "end_date", required = false) LocalDateTime endDate,
+            @RequestParam(name = "min_amount", required = false) Double minAmount,
+            @RequestParam(name = "max_amount", required = false) Double maxAmount,
+            @RequestParam(required = false) String iban
+    ) {
+        return transactionService.getAllTransactions(offset, limit, startDate, endDate, minAmount, maxAmount, iban);
     }
 
     @PostMapping
     @Operation(
-            summary = "Create a new transaction",
-            description = "Create a new financial transaction (transfer, deposit, withdrawal)"
+            summary = "Create a transaction (customer or employee)",
+            security = @SecurityRequirement(name = "application", scopes = {"write"})
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -64,11 +70,7 @@ public class TransactionController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid transaction data"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
+                    description = "Invalid input or limits exceeded"
             )
     })
     public ResponseEntity<TransactionDTO> createTransaction(@RequestBody TransactionDTO transactionDTO) {
@@ -76,15 +78,15 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 
-    @PutMapping("/{id}")
+    @GetMapping("/{transactionId}")
     @Operation(
-            summary = "Update a transaction",
-            description = "Update an existing transaction by ID"
+            summary = "Get transaction details",
+            security = @SecurityRequirement(name = "application", scopes = {"read"})
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Transaction updated successfully",
+                    description = "Transaction details retrieved",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TransactionDTO.class)
@@ -93,39 +95,10 @@ public class TransactionController {
             @ApiResponse(
                     responseCode = "404",
                     description = "Transaction not found"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public ResponseEntity<TransactionDTO> updateTransaction(@PathVariable Long id, @RequestBody TransactionDTO transactionDTO) {
-        TransactionDTO updatedTransaction = transactionService.updateTransaction(id, transactionDTO);
-        return ResponseEntity.ok(updatedTransaction);
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Delete a transaction",
-            description = "Delete a transaction from the system by ID"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "Transaction deleted successfully"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Transaction not found"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
-            )
-    })
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
-        transactionService.deleteTransaction(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<TransactionDTO> getTransactionById(@PathVariable Long transactionId) {
+        return ResponseEntity.ok(transactionService.getTransactionById(transactionId));
     }
 }
 

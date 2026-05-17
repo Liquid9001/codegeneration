@@ -14,6 +14,13 @@ public class UserDTO {
     @Schema(description = "User's email address (unique)", example = "john.doe@example.com")
     private String email;
 
+    @Schema(
+            description = "Plain text password; hashing done by backend",
+            accessMode = Schema.AccessMode.WRITE_ONLY,
+            example = "StrongPass123!"
+    )
+    private String password;
+
     @Schema(description = "User's first name", example = "John")
     private String first_name;
 

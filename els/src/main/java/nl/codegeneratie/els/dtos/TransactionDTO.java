@@ -12,11 +12,11 @@ public class TransactionDTO {
     @Schema(description = "Unique transaction identifier", example = "1")
     private Long id;
 
-    @Schema(description = "Source account ID", example = "1")
-    private Long from_account_id;
+    @Schema(description = "IBAN of the sender account", example = "NL91ABNA0417164300")
+    private String from_iban;
 
-    @Schema(description = "Destination account ID", example = "2")
-    private Long to_account_id;
+    @Schema(description = "IBAN of the receiver account", example = "NL91ABNA0417164301")
+    private String to_iban;
 
     @Schema(description = "User who initiated the transaction", example = "1")
     private Long initiated_by_user_id;

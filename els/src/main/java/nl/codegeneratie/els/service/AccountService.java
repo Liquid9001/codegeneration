@@ -18,29 +18,36 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
-    public List<AccountDTO> getAllAccounts() {
-        return accountRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+    public AccountDTO getAccountById(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
+        return convertToDTO(account);
     }
 
-    public AccountDTO createAccount(AccountDTO accountDTO) {
-        Account account = new Account();
-        BeanUtils.copyProperties(accountDTO, account);
-        Account savedAccount = accountRepository.save(account);
-        return convertToDTO(savedAccount);
-    }
-
-    public AccountDTO updateAccount(Long id, AccountDTO accountDTO) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found with id: " + id));
+    public AccountDTO updateAccount(Long accountId, AccountDTO accountDTO) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
         BeanUtils.copyProperties(accountDTO, account, "id");
         Account updatedAccount = accountRepository.save(account);
         return convertToDTO(updatedAccount);
     }
 
-    public void deleteAccount(Long id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found with id: " + id));
+    public void deleteAccount(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
         accountRepository.delete(account);
+    }
+
+    public List<AccountDTO> getAccountsByCustomerId(Long customerId) {
+        return accountRepository.findByCustomerId(customerId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public Account findByIbanOrThrow(String iban) {
+        return accountRepository.findByIban(iban)
+                .orElseThrow(() -> new RuntimeException("Account not found with IBAN: " + iban));
     }
 
     private AccountDTO convertToDTO(Account account) {

@@ -5,14 +5,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.service.AccountService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/accounts")
@@ -25,61 +23,33 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    @GetMapping
+    @GetMapping("/{accountId}")
     @Operation(
-            summary = "Get all accounts",
-            description = "Retrieve a list of all bank accounts in the system"
+            summary = "Get account details",
+            security = @SecurityRequirement(name = "application", scopes = {"read"})
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Accounts retrieved successfully",
+                    description = "Account details retrieved",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = AccountDTO.class)
                     )
             ),
             @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
+                    responseCode = "404",
+                    description = "Account not found"
             )
     })
-    public List<AccountDTO> getAllAccounts() {
-        return accountService.getAllAccounts();
+    public ResponseEntity<AccountDTO> getAccountById(@PathVariable Long accountId) {
+        return ResponseEntity.ok(accountService.getAccountById(accountId));
     }
 
-    @PostMapping
+    @PutMapping("/{accountId}")
     @Operation(
-            summary = "Create a new account",
-            description = "Create a new bank account for a customer"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Account created successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = AccountDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid account data"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
-            )
-    })
-    public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountDTO accountDTO) {
-        AccountDTO createdAccount = accountService.createAccount(accountDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
-    }
-
-    @PutMapping("/{id}")
-    @Operation(
-            summary = "Update an account",
-            description = "Update an existing account by ID"
+            summary = "Update account transfer limits or active status (employee only)",
+            security = @SecurityRequirement(name = "application", scopes = {"write"})
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -93,38 +63,30 @@ public class AccountController {
             @ApiResponse(
                     responseCode = "404",
                     description = "Account not found"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long id, @RequestBody AccountDTO accountDTO) {
-        AccountDTO updatedAccount = accountService.updateAccount(id, accountDTO);
+    public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long accountId, @RequestBody AccountDTO accountDTO) {
+        AccountDTO updatedAccount = accountService.updateAccount(accountId, accountDTO);
         return ResponseEntity.ok(updatedAccount);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{accountId}")
     @Operation(
-            summary = "Delete an account",
-            description = "Delete an account from the system by ID"
+            summary = "Close a customer account (employee only)",
+            security = @SecurityRequirement(name = "application", scopes = {"write"})
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "204",
-                    description = "Account deleted successfully"
+                    description = "Account closed successfully"
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Account not found"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
-        accountService.deleteAccount(id);
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long accountId) {
+        accountService.deleteAccount(accountId);
         return ResponseEntity.noContent().build();
     }
 }

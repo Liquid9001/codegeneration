@@ -5,8 +5,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import nl.codegeneratie.els.dtos.LoginRequestDTO;
+import nl.codegeneratie.els.dtos.TokenResponseDTO;
 import nl.codegeneratie.els.dtos.UserDTO;
+import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
 import nl.codegeneratie.els.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "Users", description = "User management endpoints")
+@Tag(name = "Users", description = "User registration, login, approval, and user details")
 public class UserController {
 
     private final UserService userService;
@@ -27,36 +31,36 @@ public class UserController {
 
     @GetMapping
     @Operation(
-            summary = "Get all users",
-            description = "Retrieve a list of all users in the system"
+            summary = "Get all users with their accounts",
+            description = "Retrieve all users including their accounts (secured)",
+            security = @SecurityRequirement(name = "application", scopes = {"read"})
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Users retrieved successfully",
+                    description = "List of users with accounts",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserDTO.class)
+                            schema = @Schema(implementation = UserWithAccountsDTO.class)
                     )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public List<UserDTO> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserWithAccountsDTO> getAllUsers(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer limit
+    ) {
+        return userService.getAllUsers(offset, limit);
     }
 
     @PostMapping
     @Operation(
-            summary = "Create a new user",
-            description = "Create a new user in the system"
+            summary = "Register a new customer",
+            description = "Customer signup with essential information; password hashing handled by backend"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "User created successfully",
+                    description = "Customer registered successfully, pending approval",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDTO.class)
@@ -64,11 +68,7 @@ public class UserController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid user data"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
+                    description = "Invalid input or email already used"
             )
     })
     public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
@@ -76,56 +76,75 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/login")
     @Operation(
-            summary = "Update a user",
-            description = "Update an existing user by ID"
+            summary = "User login",
+            description = "User login to obtain JWT token; single login endpoint for all users"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User updated successfully",
+                    description = "Successful login with JWT token",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserDTO.class)
+                            schema = @Schema(implementation = TokenResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized - invalid credentials"
+            )
+    })
+    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequestDTO request) {
+        return ResponseEntity.ok(userService.login(request.getEmail(), request.getPassword()));
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(
+            summary = "Get user details with accounts",
+            description = "Retrieve user information including accounts (secured)",
+            security = @SecurityRequirement(name = "application", scopes = {"read"})
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User details retrieved",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserWithAccountsDTO.class)
                     )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "User not found"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        UserDTO updatedUser = userService.updateUser(id, userDTO);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<UserWithAccountsDTO> getUserById(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{userId}/approve")
     @Operation(
-            summary = "Delete a user",
-            description = "Delete a user from the system by ID"
+            summary = "Approve a user (employee only)",
+            description = "Approve a registered user and automatically generate bank accounts",
+            security = @SecurityRequirement(name = "application", scopes = {"write"})
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "204",
-                    description = "User deleted successfully"
+                    responseCode = "200",
+                    description = "User approved successfully and accounts created",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserWithAccountsDTO.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "User not found"
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error"
             )
     })
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.approveUser(userId));
     }
 }
 
