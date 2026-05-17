@@ -30,7 +30,7 @@ public class TransactionController {
     @GetMapping
     @Operation(
             summary = "Get all transactions (employee only)",
-            security = @SecurityRequirement(name = "application", scopes = {"read"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -57,7 +57,7 @@ public class TransactionController {
     @PostMapping
     @Operation(
             summary = "Create a transaction (customer or employee)",
-            security = @SecurityRequirement(name = "application", scopes = {"write"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -81,7 +81,7 @@ public class TransactionController {
     @GetMapping("/{transactionId}")
     @Operation(
             summary = "Get transaction details",
-            security = @SecurityRequirement(name = "application", scopes = {"read"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(

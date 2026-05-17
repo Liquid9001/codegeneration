@@ -33,7 +33,7 @@ public class UserController {
     @Operation(
             summary = "Get all users with their accounts",
             description = "Retrieve all users including their accounts (secured)",
-            security = @SecurityRequirement(name = "application", scopes = {"read"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -103,7 +103,7 @@ public class UserController {
     @Operation(
             summary = "Get user details with accounts",
             description = "Retrieve user information including accounts (secured)",
-            security = @SecurityRequirement(name = "application", scopes = {"read"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -127,7 +127,7 @@ public class UserController {
     @Operation(
             summary = "Approve a user (employee only)",
             description = "Approve a registered user and automatically generate bank accounts",
-            security = @SecurityRequirement(name = "application", scopes = {"write"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(

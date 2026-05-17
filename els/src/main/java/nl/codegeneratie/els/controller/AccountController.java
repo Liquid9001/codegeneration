@@ -26,7 +26,7 @@ public class AccountController {
     @GetMapping("/{accountId}")
     @Operation(
             summary = "Get account details",
-            security = @SecurityRequirement(name = "application", scopes = {"read"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -49,7 +49,7 @@ public class AccountController {
     @PutMapping("/{accountId}")
     @Operation(
             summary = "Update account transfer limits or active status (employee only)",
-            security = @SecurityRequirement(name = "application", scopes = {"write"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -73,7 +73,7 @@ public class AccountController {
     @DeleteMapping("/{accountId}")
     @Operation(
             summary = "Close a customer account (employee only)",
-            security = @SecurityRequirement(name = "application", scopes = {"write"})
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(

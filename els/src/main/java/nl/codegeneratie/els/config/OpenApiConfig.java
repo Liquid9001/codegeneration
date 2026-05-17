@@ -4,9 +4,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.OAuthFlows;
-import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,21 +21,28 @@ public class OpenApiConfig {
                         .version("1.0.0")
                         .description("API Design Project Code Generation"));
 
-        // Add OAuth2 security scheme
-        SecurityScheme oauthScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.OAUTH2)
-                .flows(new OAuthFlows()
-                        .clientCredentials(new OAuthFlow()
-                                .tokenUrl("http://example.com/oauth/token")
-                                .scopes(new Scopes()
-                                        .addString("read", "allows reading resources")
-                                        .addString("write", "allows modifying resources"))));
+        // Add HTTP Bearer token security scheme
+        SecurityScheme bearerScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+                .description("JWT token obtained from /users/login endpoint (use email and password)");
+
+        // Add HTTP Basic auth scheme so Swagger UI can prompt for username/password (root user)
+        SecurityScheme basicScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("basic")
+                .description("Basic auth for admin/root access (username/password)");
 
         if (openAPI.getComponents() == null) {
             openAPI.setComponents(new io.swagger.v3.oas.models.Components());
         }
-        openAPI.getComponents().addSecuritySchemes("application", oauthScheme);
-        openAPI.addSecurityItem(new SecurityRequirement().addList("application", Arrays.asList("read", "write")));
+        openAPI.getComponents().addSecuritySchemes("bearerAuth", bearerScheme);
+        openAPI.getComponents().addSecuritySchemes("basicAuth", basicScheme);
+
+        // Allow either bearerAuth or basicAuth globally; Swagger UI will show both in Authorize dialog
+        openAPI.addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+        openAPI.addSecurityItem(new SecurityRequirement().addList("basicAuth"));
 
         // Add tags
         openAPI.tags(Arrays.asList(
