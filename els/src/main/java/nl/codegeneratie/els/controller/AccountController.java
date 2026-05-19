@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.service.AccountService;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class AccountController {
     @GetMapping("/{accountId}")
     @Operation(
             summary = "Get account details",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = { @SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth") }
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -49,7 +50,9 @@ public class AccountController {
     @PutMapping("/{accountId}")
     @Operation(
             summary = "Update account transfer limits or active status (employee only)",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = {
+                    @SecurityRequirement(name = "bearerAuth"),
+                    @SecurityRequirement(name = "basicAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -65,7 +68,7 @@ public class AccountController {
                     description = "Account not found"
             )
     })
-    public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long accountId, @RequestBody AccountDTO accountDTO) {
+    public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long accountId, @Valid @RequestBody AccountDTO accountDTO) {
         AccountDTO updatedAccount = accountService.updateAccount(accountId, accountDTO);
         return ResponseEntity.ok(updatedAccount);
     }
@@ -73,7 +76,7 @@ public class AccountController {
     @DeleteMapping("/{accountId}")
     @Operation(
             summary = "Close a customer account (employee only)",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = { @SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth") }
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -90,4 +93,3 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 }
-

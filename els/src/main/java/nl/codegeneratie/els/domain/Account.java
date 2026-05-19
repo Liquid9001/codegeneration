@@ -13,16 +13,25 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long customer_id;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private User user;
 
     @Column(unique = true)
     private String iban;
 
-    private String account_type;
+    @Column(name = "account_type")
+    private String accountType;
     private BigDecimal balance;
-    private BigDecimal absolute_transfer_limit;
-    private BigDecimal daily_transfer_limit;
+
+    @Column(name = "absolute_transfer_limit")
+    private BigDecimal absoluteTransferLimit;
+
+    @Column(name = "daily_transfer_limit")
+    private BigDecimal dailyTransferLimit;
     private boolean active;
-    private LocalDateTime created_at;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 }
 
