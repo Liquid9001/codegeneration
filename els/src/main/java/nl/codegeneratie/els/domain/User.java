@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -27,5 +28,8 @@ public class User {
     private Integer role;
     private boolean approved;
     private LocalDateTime created_at;
+
+    @OneToMany(mappedBy = "user")
+    private List<Account> accounts;
 }
 

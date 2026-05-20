@@ -7,6 +7,8 @@ import nl.codegeneratie.els.dtos.CustomerSearchDTO;
 import nl.codegeneratie.els.dtos.TokenResponseDTO;
 import nl.codegeneratie.els.dtos.UserDTO;
 import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
+import nl.codegeneratie.els.exceptions.IbanNotFoundException;
+import nl.codegeneratie.els.exceptions.UserNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -63,7 +66,7 @@ public class UserService {
 
     public UserWithAccountsDTO getUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         return convertToUserWithAccountsDTO(user);
     }
 
@@ -85,15 +88,15 @@ public class UserService {
 
     public UserWithAccountsDTO approveUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         user.setApproved(true);
         userRepository.save(user);
 
-        List<Account> existing = accountRepository.findByCustomerId(userId);
+        List<Account> existing = accountRepository.findByUser_Id(userId);
         if (existing.isEmpty()) {
-            accountRepository.save(buildDefaultAccount(userId, "checking"));
-            accountRepository.save(buildDefaultAccount(userId, "savings"));
+            accountRepository.save(buildDefaultAccount(user, "checking"));
+            accountRepository.save(buildDefaultAccount(user, "savings"));
         }
 
         return convertToUserWithAccountsDTO(user);
@@ -103,7 +106,7 @@ public class UserService {
         List<User> users = userRepository.findByFirstAndLastName(firstName, lastName);
         List<CustomerSearchDTO> results = new ArrayList<>();
         for (User user : users) {
-            List<Account> accounts = accountRepository.findByCustomerId(user.getId());
+            List<Account> accounts = accountRepository.findByUser_Id(user.getId());
             for (Account account : accounts) {
                 results.add(new CustomerSearchDTO(user.getId(), user.getFirst_name(), user.getLast_name(), account.getIban()));
             }
@@ -122,7 +125,7 @@ public class UserService {
         UserWithAccountsDTO dto = new UserWithAccountsDTO();
         BeanUtils.copyProperties(user, dto);
         dto.setPassword(null);
-        List<AccountDTO> accounts = accountRepository.findByCustomerId(user.getId())
+        List<AccountDTO> accounts = accountRepository.findByUser_Id(user.getId())
                 .stream()
                 .map(this::toAccountDTO)
                 .collect(Collectors.toList());
@@ -136,16 +139,16 @@ public class UserService {
         return dto;
     }
 
-    private Account buildDefaultAccount(Long userId, String accountType) {
+    private Account buildDefaultAccount(User user, String accountType) {
         Account account = new Account();
-        account.setCustomer_id(userId);
+        account.setUser(user);
         account.setIban("NL" + (90 + (int) (Math.random() * 10)) + "ELS" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
-        account.setAccount_type(accountType);
+        account.setAccountType(accountType);
         account.setBalance(BigDecimal.ZERO);
-        account.setAbsolute_transfer_limit(new BigDecimal("1000.00"));
-        account.setDaily_transfer_limit(new BigDecimal("5000.00"));
+        account.setAbsoluteTransferLimit(new BigDecimal("1000.00"));
+        account.setDailyTransferLimit(new BigDecimal("5000.00"));
         account.setActive(true);
-        account.setCreated_at(LocalDateTime.now());
+        account.setCreatedAt(LocalDateTime.now());
         return account;
     }
 }
