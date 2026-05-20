@@ -91,58 +91,58 @@ public class DataInitializer implements CommandLineRunner {
 
             // Create Accounts
             Account account1 = new Account();
-            account1.setCustomer_id(1L);
+            account1.setUser(user1);
             account1.setIban("NL91ABNA0417164300");
-            account1.setAccount_type("CHECKING");
+            account1.setAccountType("CHECKING");
             account1.setBalance(new BigDecimal("5000.00"));
-            account1.setAbsolute_transfer_limit(new BigDecimal("10000.00"));
-            account1.setDaily_transfer_limit(new BigDecimal("20000.00"));
+            account1.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
+            account1.setDailyTransferLimit(new BigDecimal("20000.00"));
             account1.setActive(true);
-            account1.setCreated_at(LocalDateTime.parse("2024-01-15 10:30:00", formatter));
+            account1.setCreatedAt(LocalDateTime.parse("2024-01-15 10:30:00", formatter));
             accountRepository.save(account1);
 
             Account account2 = new Account();
-            account2.setCustomer_id(1L);
+            account2.setUser(user1);
             account2.setIban("NL47ABNA0123456789");
-            account2.setAccount_type("SAVINGS");
+            account2.setAccountType("SAVINGS");
             account2.setBalance(new BigDecimal("15000.00"));
-            account2.setAbsolute_transfer_limit(new BigDecimal("5000.00"));
-            account2.setDaily_transfer_limit(new BigDecimal("10000.00"));
+            account2.setAbsoluteTransferLimit(new BigDecimal("5000.00"));
+            account2.setDailyTransferLimit(new BigDecimal("10000.00"));
             account2.setActive(true);
-            account2.setCreated_at(LocalDateTime.parse("2024-02-01 14:20:00", formatter));
+            account2.setCreatedAt(LocalDateTime.parse("2024-02-01 14:20:00", formatter));
             accountRepository.save(account2);
 
             Account account3 = new Account();
-            account3.setCustomer_id(2L);
+            account3.setUser(user2);
             account3.setIban("NL61ABNA0123456790");
-            account3.setAccount_type("CHECKING");
+            account3.setAccountType("CHECKING");
             account3.setBalance(new BigDecimal("8500.50"));
-            account3.setAbsolute_transfer_limit(new BigDecimal("10000.00"));
-            account3.setDaily_transfer_limit(new BigDecimal("20000.00"));
+            account3.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
+            account3.setDailyTransferLimit(new BigDecimal("20000.00"));
             account3.setActive(true);
-            account3.setCreated_at(LocalDateTime.parse("2024-01-16 14:45:00", formatter));
+            account3.setCreatedAt(LocalDateTime.parse("2024-01-16 14:45:00", formatter));
             accountRepository.save(account3);
 
             Account account4 = new Account();
-            account4.setCustomer_id(3L);
+            account4.setUser(user3);
             account4.setIban("NL71ABNA0123456791");
-            account4.setAccount_type("CHECKING");
+            account4.setAccountType("CHECKING");
             account4.setBalance(new BigDecimal("3200.75"));
-            account4.setAbsolute_transfer_limit(new BigDecimal("10000.00"));
-            account4.setDaily_transfer_limit(new BigDecimal("20000.00"));
+            account4.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
+            account4.setDailyTransferLimit(new BigDecimal("20000.00"));
             account4.setActive(true);
-            account4.setCreated_at(LocalDateTime.parse("2024-01-17 09:15:00", formatter));
+            account4.setCreatedAt(LocalDateTime.parse("2024-01-17 09:15:00", formatter));
             accountRepository.save(account4);
 
             Account account5 = new Account();
-            account5.setCustomer_id(4L);
+            account5.setUser(user4);
             account5.setIban("NL81ABNA0123456792");
-            account5.setAccount_type("SAVINGS");
+            account5.setAccountType("SAVINGS");
             account5.setBalance(new BigDecimal("50000.00"));
-            account5.setAbsolute_transfer_limit(new BigDecimal("50000.00"));
-            account5.setDaily_transfer_limit(new BigDecimal("100000.00"));
+            account5.setAbsoluteTransferLimit(new BigDecimal("50000.00"));
+            account5.setDailyTransferLimit(new BigDecimal("100000.00"));
             account5.setActive(true);
-            account5.setCreated_at(LocalDateTime.parse("2024-01-18 11:30:00", formatter));
+            account5.setCreatedAt(LocalDateTime.parse("2024-01-18 11:30:00", formatter));
             accountRepository.save(account5);
 
             // Create Transactions
