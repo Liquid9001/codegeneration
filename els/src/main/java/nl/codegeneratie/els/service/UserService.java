@@ -71,13 +71,14 @@ public class UserService {
     }
 
     public TokenResponseDTO login(String email, String password) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
-        boolean valid = passwordEncoder.matches(password == null ? "" : password, user.getPassword_hash());
-        if (!valid && user.getPassword_hash() != null) {
-            valid = user.getPassword_hash().equals(password);
-        }
+        boolean valid = passwordEncoder.matches(
+                password == null ? "" : password,
+                user.getPassword_hash()
+        );
 
         if (!valid) {
             throw new RuntimeException("Invalid credentials");

@@ -3,6 +3,7 @@ package nl.codegeneratie.els.config;
 import nl.codegeneratie.els.domain.*;
 import nl.codegeneratie.els.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -17,10 +18,12 @@ public class DataInitializer implements CommandLineRunner {
     private final TransactionRepository transactionRepository;
     private final AtmSessionRepository atmSessionRepository;
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     public DataInitializer(UserRepository userRepository,
-                          AccountRepository accountRepository,
-                          TransactionRepository transactionRepository,
-                          AtmSessionRepository atmSessionRepository) {
+                           AccountRepository accountRepository,
+                           TransactionRepository transactionRepository,
+                           AtmSessionRepository atmSessionRepository) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
@@ -29,64 +32,81 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Only initialize if database is empty
+
         if (userRepository.count() == 0) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            DateTimeFormatter formatter =
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
             // Create Users
             User user1 = new User();
             user1.setEmail("john.doe@example.com");
+            user1.setPassword_hash(passwordEncoder.encode("password123"));
             user1.setFirst_name("John");
             user1.setLast_name("Doe");
             user1.setPhone_number(612345678);
             user1.setBsn(123456789);
             user1.setRole(0);
             user1.setApproved(true);
-            user1.setCreated_at(LocalDateTime.parse("2024-01-15 10:30:00", formatter));
+            user1.setCreated_at(
+                    LocalDateTime.parse("2024-01-15 10:30:00", formatter)
+            );
             userRepository.save(user1);
 
             User user2 = new User();
             user2.setEmail("jane.smith@example.com");
+            user2.setPassword_hash(passwordEncoder.encode("password123"));
             user2.setFirst_name("Jane");
             user2.setLast_name("Smith");
             user2.setPhone_number(621234567);
             user2.setBsn(987654321);
             user2.setRole(0);
             user2.setApproved(true);
-            user2.setCreated_at(LocalDateTime.parse("2024-01-16 14:45:00", formatter));
+            user2.setCreated_at(
+                    LocalDateTime.parse("2024-01-16 14:45:00", formatter)
+            );
             userRepository.save(user2);
 
             User user3 = new User();
             user3.setEmail("michael.johnson@example.com");
+            user3.setPassword_hash(passwordEncoder.encode("password123"));
             user3.setFirst_name("Michael");
             user3.setLast_name("Johnson");
             user3.setPhone_number(698765432);
             user3.setBsn(555666777);
             user3.setRole(0);
             user3.setApproved(true);
-            user3.setCreated_at(LocalDateTime.parse("2024-01-17 09:15:00", formatter));
+            user3.setCreated_at(
+                    LocalDateTime.parse("2024-01-17 09:15:00", formatter)
+            );
             userRepository.save(user3);
 
             User user4 = new User();
             user4.setEmail("sara.williams@example.com");
+            user4.setPassword_hash(passwordEncoder.encode("password123"));
             user4.setFirst_name("Sara");
             user4.setLast_name("Williams");
             user4.setPhone_number(643210987);
             user4.setBsn(111222333);
             user4.setRole(1);
             user4.setApproved(true);
-            user4.setCreated_at(LocalDateTime.parse("2024-01-18 11:30:00", formatter));
+            user4.setCreated_at(
+                    LocalDateTime.parse("2024-01-18 11:30:00", formatter)
+            );
             userRepository.save(user4);
 
             User user5 = new User();
             user5.setEmail("admin@example.com");
+            user5.setPassword_hash(passwordEncoder.encode("admin123"));
             user5.setFirst_name("Admin");
             user5.setLast_name("User");
             user5.setPhone_number(600000000);
             user5.setBsn(999999999);
             user5.setRole(2);
             user5.setApproved(true);
-            user5.setCreated_at(LocalDateTime.parse("2024-01-01 08:00:00", formatter));
+            user5.setCreated_at(
+                    LocalDateTime.parse("2024-01-01 08:00:00", formatter)
+            );
             userRepository.save(user5);
 
             // Create Accounts
