@@ -6,16 +6,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityUtil {
 
-    public static Long getCurrentUserId() {
+    private static Claims getClaims() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Claims claims = (Claims) auth.getDetails();
-        return claims.get("userId", Integer.class).longValue();
+        return (Claims) auth.getPrincipal();
+    }
+
+    public static Long getCurrentUserId() {
+        return getClaims().get("userId", Long.class);
     }
 
     public static String getCurrentUserRole() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Claims claims = (Claims) auth.getDetails();
-        return claims.get("role", String.class);
+        return getClaims().get("role", String.class);
     }
 
     public static boolean isEmployeeOrAdmin() {
