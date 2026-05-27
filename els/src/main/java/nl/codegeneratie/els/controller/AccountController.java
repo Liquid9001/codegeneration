@@ -27,7 +27,9 @@ public class AccountController {
     @GetMapping("/{accountId}")
     @Operation(
             summary = "Get account details",
-            security = { @SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth") }
+            security = {
+                    @SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -52,7 +54,8 @@ public class AccountController {
             summary = "Update account transfer limits or active status (employee only)",
             security = {
                     @SecurityRequirement(name = "bearerAuth"),
-                    @SecurityRequirement(name = "basicAuth")}
+                    @SecurityRequirement(name = "basicAuth")
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(

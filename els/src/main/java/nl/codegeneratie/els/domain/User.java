@@ -17,17 +17,22 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    private String password_hash;
-    private String first_name;
-    private String last_name;
-    private Integer phone_number;
+    @Column(name = "password_hash")
+    private String passwordHash;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String lastName;
+    @Column(name = "phone_number")
+    private Integer phoneNumber;
 
     @Column(unique = true)
     private Integer bsn;
 
     private Integer role;
     private boolean approved;
-    private LocalDateTime created_at;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "user")
     private List<Account> accounts;

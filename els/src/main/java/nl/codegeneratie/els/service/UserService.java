@@ -52,13 +52,13 @@ public class UserService {
     public UserDTO createUser(UserDTO userDTO) {
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
-        user.setPassword_hash(passwordEncoder.encode(userDTO.getPassword() == null ? "" : userDTO.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword() == null ? "" : userDTO.getPassword()));
         user.setApproved(false);
         if (user.getRole() == null) {
             user.setRole(0);
         }
-        if (user.getCreated_at() == null) {
-            user.setCreated_at(LocalDateTime.now());
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(LocalDateTime.now());
         }
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
@@ -77,7 +77,7 @@ public class UserService {
 
         boolean valid = passwordEncoder.matches(
                 password == null ? "" : password,
-                user.getPassword_hash()
+                user.getPasswordHash()
         );
 
         if (!valid) {
@@ -109,7 +109,7 @@ public class UserService {
         for (User user : users) {
             List<Account> accounts = accountRepository.findByUser_Id(user.getId());
             for (Account account : accounts) {
-                results.add(new CustomerSearchDTO(user.getId(), user.getFirst_name(), user.getLast_name(), account.getIban()));
+                results.add(new CustomerSearchDTO(user.getId(), user.getFirstName(), user.getLastName(), account.getIban()));
             }
         }
         return results;

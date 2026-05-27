@@ -22,13 +22,13 @@ public class UserDTO {
     private String password;
 
     @Schema(description = "User's first name", example = "John")
-    private String first_name;
+    private String firstName;
 
     @Schema(description = "User's last name", example = "Doe")
-    private String last_name;
+    private String lastName;
 
     @Schema(description = "User's phone number", example = "0612345678")
-    private Integer phone_number;
+    private Integer phoneNumber;
 
     @Schema(description = "Dutch BSN (Burgerservicenummer)", example = "123456789")
     private Integer bsn;
@@ -40,6 +40,6 @@ public class UserDTO {
     private boolean approved;
 
     @Schema(description = "Account creation timestamp")
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 }
 

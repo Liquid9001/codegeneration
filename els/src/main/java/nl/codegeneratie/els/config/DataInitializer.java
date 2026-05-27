@@ -16,18 +16,15 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
-    private final AtmSessionRepository atmSessionRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public DataInitializer(UserRepository userRepository,
                            AccountRepository accountRepository,
-                           TransactionRepository transactionRepository,
-                           AtmSessionRepository atmSessionRepository) {
+                           TransactionRepository transactionRepository) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
-        this.atmSessionRepository = atmSessionRepository;
     }
 
     @Override
@@ -41,70 +38,70 @@ public class DataInitializer implements CommandLineRunner {
             // Create Users
             User user1 = new User();
             user1.setEmail("john.doe@example.com");
-            user1.setPassword_hash(passwordEncoder.encode("password123"));
-            user1.setFirst_name("John");
-            user1.setLast_name("Doe");
-            user1.setPhone_number(612345678);
+            user1.setPasswordHash(passwordEncoder.encode("password123"));
+            user1.setFirstName("John");
+            user1.setLastName("Doe");
+            user1.setPhoneNumber(612345678);
             user1.setBsn(123456789);
             user1.setRole(0);
             user1.setApproved(true);
-            user1.setCreated_at(
+            user1.setCreatedAt(
                     LocalDateTime.parse("2024-01-15 10:30:00", formatter)
             );
             userRepository.save(user1);
 
             User user2 = new User();
             user2.setEmail("jane.smith@example.com");
-            user2.setPassword_hash(passwordEncoder.encode("password123"));
-            user2.setFirst_name("Jane");
-            user2.setLast_name("Smith");
-            user2.setPhone_number(621234567);
+            user2.setPasswordHash(passwordEncoder.encode("password123"));
+            user2.setFirstName("Jane");
+            user2.setLastName("Smith");
+            user2.setPhoneNumber(621234567);
             user2.setBsn(987654321);
             user2.setRole(0);
             user2.setApproved(true);
-            user2.setCreated_at(
+            user2.setCreatedAt(
                     LocalDateTime.parse("2024-01-16 14:45:00", formatter)
             );
             userRepository.save(user2);
 
             User user3 = new User();
             user3.setEmail("michael.johnson@example.com");
-            user3.setPassword_hash(passwordEncoder.encode("password123"));
-            user3.setFirst_name("Michael");
-            user3.setLast_name("Johnson");
-            user3.setPhone_number(698765432);
+            user3.setPasswordHash(passwordEncoder.encode("password123"));
+            user3.setFirstName("Michael");
+            user3.setLastName("Johnson");
+            user3.setPhoneNumber(698765432);
             user3.setBsn(555666777);
             user3.setRole(0);
             user3.setApproved(true);
-            user3.setCreated_at(
+            user3.setCreatedAt(
                     LocalDateTime.parse("2024-01-17 09:15:00", formatter)
             );
             userRepository.save(user3);
 
             User user4 = new User();
             user4.setEmail("sara.williams@example.com");
-            user4.setPassword_hash(passwordEncoder.encode("password123"));
-            user4.setFirst_name("Sara");
-            user4.setLast_name("Williams");
-            user4.setPhone_number(643210987);
+            user4.setPasswordHash(passwordEncoder.encode("password123"));
+            user4.setFirstName("Sara");
+            user4.setLastName("Williams");
+            user4.setPhoneNumber(643210987);
             user4.setBsn(111222333);
             user4.setRole(1);
             user4.setApproved(true);
-            user4.setCreated_at(
+            user4.setCreatedAt(
                     LocalDateTime.parse("2024-01-18 11:30:00", formatter)
             );
             userRepository.save(user4);
 
             User user5 = new User();
             user5.setEmail("admin@example.com");
-            user5.setPassword_hash(passwordEncoder.encode("admin123"));
-            user5.setFirst_name("Admin");
-            user5.setLast_name("User");
-            user5.setPhone_number(600000000);
+            user5.setPasswordHash(passwordEncoder.encode("admin123"));
+            user5.setFirstName("Admin");
+            user5.setLastName("User");
+            user5.setPhoneNumber(600000000);
             user5.setBsn(999999999);
             user5.setRole(2);
             user5.setApproved(true);
-            user5.setCreated_at(
+            user5.setCreatedAt(
                     LocalDateTime.parse("2024-01-01 08:00:00", formatter)
             );
             userRepository.save(user5);
@@ -167,11 +164,11 @@ public class DataInitializer implements CommandLineRunner {
 
             // Create Transactions
             Transaction transaction1 = new Transaction();
-            transaction1.setFrom_account_id(1L);
-            transaction1.setTo_account_id(3L);
-            transaction1.setInitiated_by_user_id(1L);
+            transaction1.setFromAccountId(1L);
+            transaction1.setToAccountId(3L);
+            transaction1.setInitiatedByUserId(1L);
             transaction1.setAmount(new BigDecimal("250.00"));
-            transaction1.setTransaction_type("TRANSFER");
+            transaction1.setTransactionType("TRANSFER");
             transaction1.setCurrency("EUR");
             transaction1.setTimestamp(LocalDateTime.parse("2024-01-20 10:15:00", formatter));
             transaction1.setStatus("COMPLETED");
@@ -179,11 +176,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction1);
 
             Transaction transaction2 = new Transaction();
-            transaction2.setFrom_account_id(3L);
-            transaction2.setTo_account_id(1L);
-            transaction2.setInitiated_by_user_id(2L);
+            transaction2.setFromAccountId(3L);
+            transaction2.setToAccountId(1L);
+            transaction2.setInitiatedByUserId(2L);
             transaction2.setAmount(new BigDecimal("150.50"));
-            transaction2.setTransaction_type("TRANSFER");
+            transaction2.setTransactionType("TRANSFER");
             transaction2.setCurrency("EUR");
             transaction2.setTimestamp(LocalDateTime.parse("2024-01-21 12:30:00", formatter));
             transaction2.setStatus("COMPLETED");
@@ -191,11 +188,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction2);
 
             Transaction transaction3 = new Transaction();
-            transaction3.setFrom_account_id(1L);
-            transaction3.setTo_account_id(4L);
-            transaction3.setInitiated_by_user_id(1L);
+            transaction3.setFromAccountId(1L);
+            transaction3.setToAccountId(4L);
+            transaction3.setInitiatedByUserId(1L);
             transaction3.setAmount(new BigDecimal("500.00"));
-            transaction3.setTransaction_type("TRANSFER");
+            transaction3.setTransactionType("TRANSFER");
             transaction3.setCurrency("EUR");
             transaction3.setTimestamp(LocalDateTime.parse("2024-01-22 14:00:00", formatter));
             transaction3.setStatus("COMPLETED");
@@ -203,11 +200,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction3);
 
             Transaction transaction4 = new Transaction();
-            transaction4.setFrom_account_id(2L);
-            transaction4.setTo_account_id(5L);
-            transaction4.setInitiated_by_user_id(1L);
+            transaction4.setFromAccountId(2L);
+            transaction4.setToAccountId(5L);
+            transaction4.setInitiatedByUserId(1L);
             transaction4.setAmount(new BigDecimal("1000.00"));
-            transaction4.setTransaction_type("TRANSFER");
+            transaction4.setTransactionType("TRANSFER");
             transaction4.setCurrency("EUR");
             transaction4.setTimestamp(LocalDateTime.parse("2024-01-23 09:45:00", formatter));
             transaction4.setStatus("PENDING");
@@ -215,55 +212,20 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction4);
 
             Transaction transaction5 = new Transaction();
-            transaction5.setFrom_account_id(4L);
-            transaction5.setTo_account_id(1L);
-            transaction5.setInitiated_by_user_id(3L);
+            transaction5.setFromAccountId(4L);
+            transaction5.setToAccountId(1L);
+            transaction5.setInitiatedByUserId(3L);
             transaction5.setAmount(new BigDecimal("75.25"));
-            transaction5.setTransaction_type("TRANSFER");
+            transaction5.setTransactionType("TRANSFER");
             transaction5.setCurrency("EUR");
             transaction5.setTimestamp(LocalDateTime.parse("2024-01-24 11:20:00", formatter));
             transaction5.setStatus("COMPLETED");
             transaction5.setDescription("Payment for services rendered");
             transactionRepository.save(transaction5);
 
-            // Create ATM Sessions
-            AtmSession session1 = new AtmSession();
-            session1.setCustomer_id(1L);
-            session1.setLogin_time(LocalDateTime.parse("2024-01-25 08:00:00", formatter));
-            session1.setLogout_time(LocalDateTime.parse("2024-01-25 08:15:00", formatter));
-            session1.setActive(false);
-            atmSessionRepository.save(session1);
-
-            AtmSession session2 = new AtmSession();
-            session2.setCustomer_id(2L);
-            session2.setLogin_time(LocalDateTime.parse("2024-01-25 10:30:00", formatter));
-            session2.setLogout_time(LocalDateTime.parse("2024-01-25 10:45:00", formatter));
-            session2.setActive(false);
-            atmSessionRepository.save(session2);
-
-            AtmSession session3 = new AtmSession();
-            session3.setCustomer_id(3L);
-            session3.setLogin_time(LocalDateTime.parse("2024-01-25 14:00:00", formatter));
-            session3.setLogout_time(null);
-            session3.setActive(true);
-            atmSessionRepository.save(session3);
-
-            AtmSession session4 = new AtmSession();
-            session4.setCustomer_id(4L);
-            session4.setLogin_time(LocalDateTime.parse("2024-01-25 16:20:00", formatter));
-            session4.setLogout_time(LocalDateTime.parse("2024-01-25 16:30:00", formatter));
-            session4.setActive(false);
-            atmSessionRepository.save(session4);
-
-            AtmSession session5 = new AtmSession();
-            session5.setCustomer_id(1L);
-            session5.setLogin_time(LocalDateTime.parse("2024-01-26 09:00:00", formatter));
-            session5.setLogout_time(null);
-            session5.setActive(true);
-            atmSessionRepository.save(session5);
 
             System.out.println("✓ Database initialized with sample data!");
-            System.out.println("✓ 5 Users, 5 Accounts, 5 Transactions, 5 ATM Sessions created");
+            System.out.println("✓ 5 Users, 5 Accounts, 5 Transactions created");
         }
     }
 }

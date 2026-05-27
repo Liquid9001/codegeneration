@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Schema(description = "Customer search result")
 public class CustomerSearchDTO {
-    private Long customer_id;
-    private String first_name;
-    private String last_name;
+    private Long customerId;
+    private String firstName;
+    private String lastName;
     private String iban;
 }
 
