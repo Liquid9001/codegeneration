@@ -14,6 +14,7 @@ import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
 import nl.codegeneratie.els.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class UserController {
                     )
             )
     })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public List<UserWithAccountsDTO> getAllUsers(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer limit
@@ -119,6 +121,7 @@ public class UserController {
                     description = "User not found"
             )
     })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<UserWithAccountsDTO> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
@@ -143,6 +146,7 @@ public class UserController {
                     description = "User not found"
             )
     })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.approveUser(userId));
     }
