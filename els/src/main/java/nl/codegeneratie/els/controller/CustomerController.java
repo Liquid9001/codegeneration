@@ -43,8 +43,8 @@ public class CustomerController {
             )
     })
     public List<CustomerSearchDTO> searchCustomers(
-            @RequestParam(name = "first_name") String firstName,
-            @RequestParam(name = "last_name") String lastName
+            @RequestParam(name = "firstName") String firstName,
+            @RequestParam(name = "lastName") String lastName
     ) {
         return userService.searchCustomers(firstName, lastName);
     }

@@ -45,10 +45,10 @@ public class TransactionController {
     public List<TransactionDTO> getAllTransactions(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer limit,
-            @RequestParam(name = "start_date", required = false) LocalDateTime startDate,
-            @RequestParam(name = "end_date", required = false) LocalDateTime endDate,
-            @RequestParam(name = "min_amount", required = false) Double minAmount,
-            @RequestParam(name = "max_amount", required = false) Double maxAmount,
+            @RequestParam(name = "startDate", required = false) LocalDateTime startDate,
+            @RequestParam(name = "endDate", required = false) LocalDateTime endDate,
+            @RequestParam(name = "minAmount", required = false) Double minAmount,
+            @RequestParam(name = "maxAmount", required = false) Double maxAmount,
             @RequestParam(required = false) String iban
     ) {
         return transactionService.getAllTransactions(offset, limit, startDate, endDate, minAmount, maxAmount, iban);

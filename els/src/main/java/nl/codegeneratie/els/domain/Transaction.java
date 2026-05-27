@@ -1,9 +1,6 @@
 package nl.codegeneratie.els.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -16,11 +13,15 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long from_account_id;
-    private Long to_account_id;
-    private Long initiated_by_user_id;
+    @Column(name = "from_account_id")
+    private Long fromAccountId;
+    @Column(name = "to_account_id")
+    private Long toAccountId;
+    @Column(name = "initiated_by_user_id")
+    private Long initiatedByUserId;
     private BigDecimal amount;
-    private String transaction_type;
+    @Column(name = "transaction_type")
+    private String transactionType;
     private String currency;
     private LocalDateTime timestamp;
     private String status;

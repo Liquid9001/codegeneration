@@ -2,6 +2,7 @@ package nl.codegeneratie.els.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.codegeneratie.els.domain.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,17 +18,23 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    private String password_hash;
-    private String first_name;
-    private String last_name;
-    private Integer phone_number;
+    @Column(name = "password_hash")
+    private String passwordHash;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String lastName;
+    @Column(name = "phone_number")
+    private Integer phoneNumber;
 
     @Column(unique = true)
     private Integer bsn;
 
-    private Integer role;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
     private boolean approved;
-    private LocalDateTime created_at;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "user")
     private List<Account> accounts;

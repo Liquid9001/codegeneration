@@ -40,7 +40,7 @@ public class TransactionService {
                 .filter(t -> endDate == null || (t.getTimestamp() != null && !t.getTimestamp().isAfter(endDate)))
                 .filter(t -> minAmount == null || (t.getAmount() != null && t.getAmount().doubleValue() >= minAmount))
                 .filter(t -> maxAmount == null || (t.getAmount() != null && t.getAmount().doubleValue() <= maxAmount))
-                .filter(t -> iban == null || Objects.equals(t.getFrom_iban(), iban) || Objects.equals(t.getTo_iban(), iban))
+                .filter(t -> iban == null || Objects.equals(t.getFromIban(), iban) || Objects.equals(t.getToIban(), iban))
                 .collect(Collectors.toList());
 
         int safeOffset = offset == null ? 0 : Math.max(offset, 0);
@@ -59,15 +59,15 @@ public class TransactionService {
     }
 
     public TransactionDTO createTransaction(TransactionDTO transactionDTO) {
-        Account from = accountRepository.findByIban(transactionDTO.getFrom_iban())
-                .orElseThrow(() -> new RuntimeException("Source account not found for IBAN: " + transactionDTO.getFrom_iban()));
-        Account to = accountRepository.findByIban(transactionDTO.getTo_iban())
-                .orElseThrow(() -> new RuntimeException("Destination account not found for IBAN: " + transactionDTO.getTo_iban()));
+        Account from = accountRepository.findByIban(transactionDTO.getFromIban())
+                .orElseThrow(() -> new RuntimeException("Source account not found for IBAN: " + transactionDTO.getFromIban()));
+        Account to = accountRepository.findByIban(transactionDTO.getToIban())
+                .orElseThrow(() -> new RuntimeException("Destination account not found for IBAN: " + transactionDTO.getToIban()));
 
         Transaction transaction = new Transaction();
         BeanUtils.copyProperties(transactionDTO, transaction, "from_iban", "to_iban");
-        transaction.setFrom_account_id(from.getId());
-        transaction.setTo_account_id(to.getId());
+        transaction.setFromAccountId(from.getId());
+        transaction.setToAccountId(to.getId());
         if (transaction.getTimestamp() == null) {
             transaction.setTimestamp(LocalDateTime.now());
         }
@@ -78,8 +78,8 @@ public class TransactionService {
     private TransactionDTO convertToDTO(Transaction transaction) {
         TransactionDTO transactionDTO = new TransactionDTO();
         BeanUtils.copyProperties(transaction, transactionDTO, "from_iban", "to_iban");
-        accountRepository.findById(transaction.getFrom_account_id()).ifPresent(a -> transactionDTO.setFrom_iban(a.getIban()));
-        accountRepository.findById(transaction.getTo_account_id()).ifPresent(a -> transactionDTO.setTo_iban(a.getIban()));
+        accountRepository.findById(transaction.getFromAccountId()).ifPresent(a -> transactionDTO.setFromIban(a.getIban()));
+        accountRepository.findById(transaction.getToAccountId()).ifPresent(a -> transactionDTO.setToIban(a.getIban()));
         return transactionDTO;
     }
 }

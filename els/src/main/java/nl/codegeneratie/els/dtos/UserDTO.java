@@ -2,6 +2,7 @@ package nl.codegeneratie.els.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import nl.codegeneratie.els.domain.enums.UserRole;
 
 import java.time.LocalDateTime;
 
@@ -22,24 +23,24 @@ public class UserDTO {
     private String password;
 
     @Schema(description = "User's first name", example = "John")
-    private String first_name;
+    private String firstName;
 
     @Schema(description = "User's last name", example = "Doe")
-    private String last_name;
+    private String lastName;
 
     @Schema(description = "User's phone number", example = "0612345678")
-    private Integer phone_number;
+    private Integer phoneNumber;
 
     @Schema(description = "Dutch BSN (Burgerservicenummer)", example = "123456789")
     private Integer bsn;
 
-    @Schema(description = "User role (0=customer, 1=employee, 2=admin)", example = "0")
-    private Integer role;
+    @Schema(description = "User role (customer, employee, admin)", example = "CUSTOMER")
+    private UserRole role;
 
     @Schema(description = "Whether the user has been approved", example = "true")
     private boolean approved;
 
     @Schema(description = "Account creation timestamp")
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 }
 
