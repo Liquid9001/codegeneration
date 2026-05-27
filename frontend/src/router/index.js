@@ -1,65 +1,121 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import DashboardView from '../views/DashboardView.vue'
-import TransactionsView from '../views/TransactionsView.vue'
-import TransferView from '../views/TransferView.vue'
-import EmployeeView from '../views/EmployeeView.vue'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
-    path: '/',
-    redirect: '/dashboard'
-  },
-  {
     path: '/login',
-    component: LoginView
+    name: 'Login',
+    component: () => import('../views/auth/LoginView.vue'),
+    meta: { public: true },
   },
   {
     path: '/register',
-    component: RegisterView
+    name: 'Register',
+    component: () => import('../views/auth/RegisterView.vue'),
+    meta: { public: true },
   },
+  {
+    path: '/welcome',
+    name: 'Welcome',
+    component: () => import('../views/WelcomeView.vue'),
+    meta: { requiresAuth: true },
+  },
+  // Customer routes
   {
     path: '/dashboard',
-    component: DashboardView,
-    meta: { requiresAuth: true }
+    name: 'CustomerDashboard',
+    component: () => import('../views/customer/CustomerDashboard.vue'),
+    meta: { requiresAuth: true, requiresApproved: true, role: 'CUSTOMER' },
   },
   {
-    path: '/transactions',
-    component: TransactionsView,
-    meta: { requiresAuth: true }
+    path: '/accounts/:id',
+    name: 'AccountDetail',
+    component: () => import('../views/customer/AccountDetailView.vue'),
+    meta: { requiresAuth: true, requiresApproved: true },
   },
   {
     path: '/transfer',
-    component: TransferView,
-    meta: { requiresAuth: true }
+    name: 'Transfer',
+    component: () => import('../views/customer/TransferView.vue'),
+    meta: { requiresAuth: true, requiresApproved: true, role: 'CUSTOMER' },
   },
   {
+    path: '/atm',
+    name: 'ATM',
+    component: () => import('../views/customer/ATMView.vue'),
+    meta: { requiresAuth: true, requiresApproved: true, role: 'CUSTOMER' },
+  },
+  {
+    path: '/transactions',
+    name: 'TransactionHistory',
+    component: () => import('../views/customer/TransactionHistoryView.vue'),
+    meta: { requiresAuth: true, requiresApproved: true, role: 'CUSTOMER' },
+  },
+  // Employee routes
+  {
     path: '/employee',
-    component: EmployeeView,
-    meta: {
-      requiresAuth: true,
-      employeeOnly: true
-    }
-  }
+    name: 'EmployeeDashboard',
+    component: () => import('../views/employee/EmployeeDashboard.vue'),
+    meta: { requiresAuth: true, role: 'EMPLOYEE' },
+  },
+  {
+    path: '/employee/customers',
+    name: 'AllCustomers',
+    component: () => import('../views/employee/AllCustomersView.vue'),
+    meta: { requiresAuth: true, role: 'EMPLOYEE' },
+  },
+  {
+    path: '/employee/customers/pending',
+    name: 'PendingCustomers',
+    component: () => import('../views/employee/PendingCustomersView.vue'),
+    meta: { requiresAuth: true, role: 'EMPLOYEE' },
+  },
+  {
+    path: '/employee/customers/:id',
+    name: 'CustomerDetail',
+    component: () => import('../views/employee/CustomerDetailView.vue'),
+    meta: { requiresAuth: true, role: 'EMPLOYEE' },
+  },
+  {
+    path: '/employee/transactions',
+    name: 'AllTransactions',
+    component: () => import('../views/employee/AllTransactionsView.vue'),
+    meta: { requiresAuth: true, role: 'EMPLOYEE' },
+  },
+  // Default redirect
+  { path: '/', redirect: '/login' },
+  { path: '/:pathMatch(.*)*', redirect: '/login' },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
+router.beforeEach((to, _from, next) => {
+  const auth = useAuthStore()
 
-  if (to.meta.requiresAuth && !token) {
+  if (to.meta.public) {
+    if (auth.isAuthenticated) {
+      return next(auth.isEmployee ? '/employee' : auth.isApproved ? '/dashboard' : '/welcome')
+    }
+    return next()
+  }
+
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return next('/login')
   }
 
-  if (to.meta.employeeOnly && user?.role !== 'EMPLOYEE') {
-    return next('/dashboard')
+  if (to.meta.role === 'EMPLOYEE' && !auth.isEmployee) {
+    return next(auth.isApproved ? '/dashboard' : '/welcome')
+  }
+
+  if (to.meta.role === 'CUSTOMER' && auth.isEmployee) {
+    return next('/employee')
+  }
+
+  if (to.meta.requiresApproved && !auth.isApproved) {
+    return next('/welcome')
   }
 
   next()
