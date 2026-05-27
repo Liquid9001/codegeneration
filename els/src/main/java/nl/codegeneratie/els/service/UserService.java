@@ -2,6 +2,7 @@ package nl.codegeneratie.els.service;
 
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
+import nl.codegeneratie.els.domain.enums.UserRole;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.dtos.CustomerSearchDTO;
 import nl.codegeneratie.els.dtos.TokenResponseDTO;
@@ -11,6 +12,7 @@ import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.exceptions.UserNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.UserRepository;
+import nl.codegeneratie.els.security.JwtService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,10 +31,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, AccountRepository accountRepository) {
+    public UserService(
+            UserRepository userRepository,
+            AccountRepository accountRepository,
+            JwtService jwtService
+    ) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.jwtService = jwtService;
     }
 
     public List<UserWithAccountsDTO> getAllUsers(Integer offset, Integer limit) {
@@ -55,7 +63,7 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(userDTO.getPassword() == null ? "" : userDTO.getPassword()));
         user.setApproved(false);
         if (user.getRole() == null) {
-            user.setRole(0);
+            user.setRole(UserRole.CUSTOMER);
         }
         if (user.getCreatedAt() == null) {
             user.setCreatedAt(LocalDateTime.now());
@@ -84,7 +92,8 @@ public class UserService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        return new TokenResponseDTO("bearer_" + UUID.randomUUID());
+        String token = jwtService.generateToken(user);
+        return new TokenResponseDTO(token);
     }
 
     public UserWithAccountsDTO approveUser(Long userId) {

@@ -2,6 +2,7 @@ package nl.codegeneratie.els.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import nl.codegeneratie.els.domain.enums.UserRole;
 
 import java.time.LocalDateTime;
 
@@ -33,8 +34,8 @@ public class UserDTO {
     @Schema(description = "Dutch BSN (Burgerservicenummer)", example = "123456789")
     private Integer bsn;
 
-    @Schema(description = "User role (0=customer, 1=employee, 2=admin)", example = "0")
-    private Integer role;
+    @Schema(description = "User role (customer, employee, admin)", example = "CUSTOMER")
+    private UserRole role;
 
     @Schema(description = "Whether the user has been approved", example = "true")
     private boolean approved;

@@ -1,6 +1,7 @@
 package nl.codegeneratie.els.config;
 
 import nl.codegeneratie.els.domain.*;
+import nl.codegeneratie.els.domain.enums.UserRole;
 import nl.codegeneratie.els.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -43,7 +44,7 @@ public class DataInitializer implements CommandLineRunner {
             user1.setLastName("Doe");
             user1.setPhoneNumber(612345678);
             user1.setBsn(123456789);
-            user1.setRole(0);
+            user1.setRole(UserRole.CUSTOMER);
             user1.setApproved(true);
             user1.setCreatedAt(
                     LocalDateTime.parse("2024-01-15 10:30:00", formatter)
@@ -57,7 +58,7 @@ public class DataInitializer implements CommandLineRunner {
             user2.setLastName("Smith");
             user2.setPhoneNumber(621234567);
             user2.setBsn(987654321);
-            user2.setRole(0);
+            user2.setRole(UserRole.CUSTOMER);
             user2.setApproved(true);
             user2.setCreatedAt(
                     LocalDateTime.parse("2024-01-16 14:45:00", formatter)
@@ -71,7 +72,7 @@ public class DataInitializer implements CommandLineRunner {
             user3.setLastName("Johnson");
             user3.setPhoneNumber(698765432);
             user3.setBsn(555666777);
-            user3.setRole(0);
+            user3.setRole(UserRole.CUSTOMER);
             user3.setApproved(true);
             user3.setCreatedAt(
                     LocalDateTime.parse("2024-01-17 09:15:00", formatter)
@@ -85,7 +86,7 @@ public class DataInitializer implements CommandLineRunner {
             user4.setLastName("Williams");
             user4.setPhoneNumber(643210987);
             user4.setBsn(111222333);
-            user4.setRole(1);
+            user4.setRole(UserRole.EMPLOYEE);
             user4.setApproved(true);
             user4.setCreatedAt(
                     LocalDateTime.parse("2024-01-18 11:30:00", formatter)
@@ -99,7 +100,7 @@ public class DataInitializer implements CommandLineRunner {
             user5.setLastName("User");
             user5.setPhoneNumber(600000000);
             user5.setBsn(999999999);
-            user5.setRole(2);
+            user5.setRole(UserRole.ADMIN);
             user5.setApproved(true);
             user5.setCreatedAt(
                     LocalDateTime.parse("2024-01-01 08:00:00", formatter)

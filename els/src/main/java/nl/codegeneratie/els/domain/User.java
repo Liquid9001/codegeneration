@@ -2,6 +2,7 @@ package nl.codegeneratie.els.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.codegeneratie.els.domain.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +30,8 @@ public class User {
     @Column(unique = true)
     private Integer bsn;
 
-    private Integer role;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
     private boolean approved;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
