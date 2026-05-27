@@ -46,7 +46,6 @@ public class AccountController {
                     description = "Account not found"
             )
     })
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountDTO> getAccountById(@PathVariable Long accountId) {
         return ResponseEntity.ok(accountService.getAccountById(accountId));
     }

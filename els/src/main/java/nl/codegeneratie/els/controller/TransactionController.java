@@ -75,7 +75,6 @@ public class TransactionController {
                     description = "Invalid input or limits exceeded"
             )
     })
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TransactionDTO> createTransaction(@RequestBody TransactionDTO transactionDTO) {
         TransactionDTO createdTransaction = transactionService.createTransaction(transactionDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
@@ -100,7 +99,6 @@ public class TransactionController {
                     description = "Transaction not found"
             )
     })
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TransactionDTO> getTransactionById(@PathVariable Long transactionId) {
         return ResponseEntity.ok(transactionService.getTransactionById(transactionId));
     }

@@ -121,7 +121,6 @@ public class UserController {
                     description = "User not found"
             )
     })
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<UserWithAccountsDTO> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
