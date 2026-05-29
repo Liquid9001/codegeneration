@@ -1,7 +1,21 @@
-APPROVING USERS AS AN EMPLOYEE / ADMIN, sets user.approved to true AND creates their accounts
+[POST] LOGGING IN AS A USER, returns token
+example url: http://localhost:8080/users/login
+
+example json request: 
+{
+	"email": "michael.johnson@example.com",
+	"password": "password123"
+}
+
+example json response:
+{
+	"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsInVzZXJJZCI6NSwicm9sZSI6IkFETUlOIiwiYXBwcm92ZWQiOnRydWUsImlhdCI6MTc4MDA4NDU5MCwiZXhwIjoxNzgwMTcwOTkwfQ.WWR9MCo31lACUU5Fw-HDsQwdyG2FPojd049DkD-E8jA"
+}
+
+[POST] APPROVING USERS AS AN EMPLOYEE / ADMIN, sets user.approved to true AND creates their accounts
 example url: http://localhost:8080/users/3/approve
 
-example json:
+example json request:
 {
 	"savingsAccount": {
 		"accountType": "SAVINGS",
@@ -15,7 +29,7 @@ example json:
 	}
 }
 
-example result:
+example json response:
 {
 	"accounts": [
 		{

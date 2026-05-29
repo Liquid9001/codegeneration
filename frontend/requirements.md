@@ -5,7 +5,7 @@
 ### Requirements
 - Must write backend code using **Java and Spring Boot**
 - Must persist data using a database (in-memory DB allowed for POC)
-- Must use a frontend JavaScript framework (e.g. Vue or React)
+- Must use a frontend JavaScript framework Specifically Vue SPA, Bootstrap, Pinia, Vite
 - Frontend must communicate with backend via **REST API only**
 - Application must be tested and stable (bug-free expectation)
 - Must include **unit tests (JUnit)**
