@@ -43,7 +43,7 @@ public class TransactionController {
                     )
             )
     })
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public List<TransactionDTO> getAllTransactions(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer limit,

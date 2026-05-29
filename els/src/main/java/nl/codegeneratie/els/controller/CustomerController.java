@@ -43,7 +43,7 @@ public class CustomerController {
                     )
             )
     })
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public List<CustomerSearchDTO> searchCustomers(
             @RequestParam(name = "firstName") String firstName,
             @RequestParam(name = "lastName") String lastName

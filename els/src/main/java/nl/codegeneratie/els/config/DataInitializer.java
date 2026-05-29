@@ -1,6 +1,7 @@
 package nl.codegeneratie.els.config;
 
 import nl.codegeneratie.els.domain.*;
+import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.domain.enums.UserRole;
 import nl.codegeneratie.els.repository.*;
 import org.springframework.boot.CommandLineRunner;
@@ -73,7 +74,7 @@ public class DataInitializer implements CommandLineRunner {
             user3.setPhoneNumber(698765432);
             user3.setBsn(555666777);
             user3.setRole(UserRole.CUSTOMER);
-            user3.setApproved(true);
+            user3.setApproved(false);
             user3.setCreatedAt(
                     LocalDateTime.parse("2024-01-17 09:15:00", formatter)
             );
@@ -111,7 +112,7 @@ public class DataInitializer implements CommandLineRunner {
             Account account1 = new Account();
             account1.setUser(user1);
             account1.setIban("NL91ABNA0417164300");
-            account1.setAccountType("CHECKING");
+            account1.setAccountType(AccountType.CHECKING);
             account1.setBalance(new BigDecimal("5000.00"));
             account1.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
             account1.setDailyTransferLimit(new BigDecimal("20000.00"));
@@ -122,7 +123,7 @@ public class DataInitializer implements CommandLineRunner {
             Account account2 = new Account();
             account2.setUser(user1);
             account2.setIban("NL47ABNA0123456789");
-            account2.setAccountType("SAVINGS");
+            account2.setAccountType(AccountType.SAVINGS);
             account2.setBalance(new BigDecimal("15000.00"));
             account2.setAbsoluteTransferLimit(new BigDecimal("5000.00"));
             account2.setDailyTransferLimit(new BigDecimal("10000.00"));
@@ -133,7 +134,7 @@ public class DataInitializer implements CommandLineRunner {
             Account account3 = new Account();
             account3.setUser(user2);
             account3.setIban("NL61ABNA0123456790");
-            account3.setAccountType("CHECKING");
+            account3.setAccountType(AccountType.CHECKING);
             account3.setBalance(new BigDecimal("8500.50"));
             account3.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
             account3.setDailyTransferLimit(new BigDecimal("20000.00"));
@@ -141,21 +142,10 @@ public class DataInitializer implements CommandLineRunner {
             account3.setCreatedAt(LocalDateTime.parse("2024-01-16 14:45:00", formatter));
             accountRepository.save(account3);
 
-            Account account4 = new Account();
-            account4.setUser(user3);
-            account4.setIban("NL71ABNA0123456791");
-            account4.setAccountType("CHECKING");
-            account4.setBalance(new BigDecimal("3200.75"));
-            account4.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
-            account4.setDailyTransferLimit(new BigDecimal("20000.00"));
-            account4.setActive(true);
-            account4.setCreatedAt(LocalDateTime.parse("2024-01-17 09:15:00", formatter));
-            accountRepository.save(account4);
-
             Account account5 = new Account();
             account5.setUser(user4);
             account5.setIban("NL81ABNA0123456792");
-            account5.setAccountType("SAVINGS");
+            account5.setAccountType(AccountType.SAVINGS);
             account5.setBalance(new BigDecimal("50000.00"));
             account5.setAbsoluteTransferLimit(new BigDecimal("50000.00"));
             account5.setDailyTransferLimit(new BigDecimal("100000.00"));
@@ -188,18 +178,6 @@ public class DataInitializer implements CommandLineRunner {
             transaction2.setDescription("Reimbursement for expenses");
             transactionRepository.save(transaction2);
 
-            Transaction transaction3 = new Transaction();
-            transaction3.setFromAccountId(1L);
-            transaction3.setToAccountId(4L);
-            transaction3.setInitiatedByUserId(1L);
-            transaction3.setAmount(new BigDecimal("500.00"));
-            transaction3.setTransactionType("TRANSFER");
-            transaction3.setCurrency("EUR");
-            transaction3.setTimestamp(LocalDateTime.parse("2024-01-22 14:00:00", formatter));
-            transaction3.setStatus("COMPLETED");
-            transaction3.setDescription("Salary payment");
-            transactionRepository.save(transaction3);
-
             Transaction transaction4 = new Transaction();
             transaction4.setFromAccountId(2L);
             transaction4.setToAccountId(5L);
@@ -212,21 +190,9 @@ public class DataInitializer implements CommandLineRunner {
             transaction4.setDescription("Large transfer pending approval");
             transactionRepository.save(transaction4);
 
-            Transaction transaction5 = new Transaction();
-            transaction5.setFromAccountId(4L);
-            transaction5.setToAccountId(1L);
-            transaction5.setInitiatedByUserId(3L);
-            transaction5.setAmount(new BigDecimal("75.25"));
-            transaction5.setTransactionType("TRANSFER");
-            transaction5.setCurrency("EUR");
-            transaction5.setTimestamp(LocalDateTime.parse("2024-01-24 11:20:00", formatter));
-            transaction5.setStatus("COMPLETED");
-            transaction5.setDescription("Payment for services rendered");
-            transactionRepository.save(transaction5);
-
 
             System.out.println("✓ Database initialized with sample data!");
-            System.out.println("✓ 5 Users, 5 Accounts, 5 Transactions created");
+            System.out.println("✓ 5 Users, 4 Accounts, 3 Transactions created");
         }
     }
 }
