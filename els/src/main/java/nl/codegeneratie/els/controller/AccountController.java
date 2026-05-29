@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.service.AccountService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -71,6 +72,7 @@ public class AccountController {
                     description = "Account not found"
             )
     })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long accountId, @Valid @RequestBody AccountDTO accountDTO) {
         AccountDTO updatedAccount = accountService.updateAccount(accountId, accountDTO);
         return ResponseEntity.ok(updatedAccount);
@@ -91,6 +93,7 @@ public class AccountController {
                     description = "Account not found"
             )
     })
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long accountId) {
         accountService.deleteAccount(accountId);
         return ResponseEntity.noContent().build();

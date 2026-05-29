@@ -3,8 +3,10 @@ package nl.codegeneratie.els.service;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
+import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
+import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +23,12 @@ public class AccountService {
     }
 
     public AccountDTO getAccountById(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        Long ownerId = account.getUser().getId();
+        if (!SecurityUtil.isEmployeeOrAdmin() && !ownerId.equals(currentUserId)) {
+            throw new ForbiddenException();
+        }
         return convertToDTO(account);
     }
 

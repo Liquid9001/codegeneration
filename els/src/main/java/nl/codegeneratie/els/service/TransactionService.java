@@ -3,8 +3,10 @@ package nl.codegeneratie.els.service;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.Transaction;
 import nl.codegeneratie.els.dtos.TransactionDTO;
+import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.TransactionRepository;
+import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -55,15 +57,33 @@ public class TransactionService {
     public TransactionDTO getTransactionById(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + transactionId));
+        if (!SecurityUtil.isEmployeeOrAdmin()) {
+            Long currentUserId = SecurityUtil.getCurrentUserId();
+            List<Long> accountIds = accountRepository.findByUser_Id(currentUserId)
+                    .stream()
+                    .map(Account::getId)
+                    .toList();
+            boolean ownsTransaction = accountIds.contains(transaction.getFromAccountId()) || accountIds.contains(transaction.getToAccountId());
+            if (!ownsTransaction) {
+                throw new ForbiddenException();
+            }
+        }
+
         return convertToDTO(transaction);
     }
 
     public TransactionDTO createTransaction(TransactionDTO transactionDTO) {
         Account from = accountRepository.findByIban(transactionDTO.getFromIban())
                 .orElseThrow(() -> new RuntimeException("Source account not found for IBAN: " + transactionDTO.getFromIban()));
+        if (!SecurityUtil.isEmployeeOrAdmin()) {
+            Long currentUserId = SecurityUtil.getCurrentUserId();
+            Long ownerId = from.getUser().getId();
+            if (!ownerId.equals(currentUserId)) {
+                throw new ForbiddenException();
+            }
+        }
         Account to = accountRepository.findByIban(transactionDTO.getToIban())
                 .orElseThrow(() -> new RuntimeException("Destination account not found for IBAN: " + transactionDTO.getToIban()));
-
         Transaction transaction = new Transaction();
         BeanUtils.copyProperties(transactionDTO, transaction, "from_iban", "to_iban");
         transaction.setFromAccountId(from.getId());

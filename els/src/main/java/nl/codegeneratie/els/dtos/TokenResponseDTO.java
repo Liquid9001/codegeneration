@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Schema(description = "Token response")
 public class TokenResponseDTO {
-    @Schema(description = "Generated bearer token", example = "bearer_123e4567-e89b-12d3-a456-426614174000")
+    @Schema(description = "Generated bearer token", example = "eyf5315jio3980f90950i129k")
     private String token;
 }
 

@@ -18,7 +18,7 @@ public class UserDTO {
     @Schema(
             description = "Plain text password; hashing done by backend",
             accessMode = Schema.AccessMode.WRITE_ONLY,
-            example = "StrongPass123!"
+            example = "password123"
     )
     private String password;
 

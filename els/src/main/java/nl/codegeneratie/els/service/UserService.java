@@ -3,16 +3,14 @@ package nl.codegeneratie.els.service;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.UserRole;
-import nl.codegeneratie.els.dtos.AccountDTO;
-import nl.codegeneratie.els.dtos.CustomerSearchDTO;
-import nl.codegeneratie.els.dtos.TokenResponseDTO;
-import nl.codegeneratie.els.dtos.UserDTO;
-import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
+import nl.codegeneratie.els.dtos.*;
+import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.exceptions.UserNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.UserRepository;
 import nl.codegeneratie.els.security.JwtService;
+import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -73,20 +71,17 @@ public class UserService {
     }
 
     public UserWithAccountsDTO getUserById(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        if (!SecurityUtil.isEmployeeOrAdmin() && !currentUserId.equals(userId)) {
+            throw new ForbiddenException();
+        }
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         return convertToUserWithAccountsDTO(user);
     }
 
     public TokenResponseDTO login(String email, String password) {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-
-        boolean valid = passwordEncoder.matches(
-                password == null ? "" : password,
-                user.getPasswordHash()
-        );
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        boolean valid = passwordEncoder.matches(password == null ? "" : password, user.getPasswordHash());
 
         if (!valid) {
             throw new RuntimeException("Invalid credentials");
@@ -96,17 +91,18 @@ public class UserService {
         return new TokenResponseDTO(token);
     }
 
-    public UserWithAccountsDTO approveUser(Long userId) {
+    public UserWithAccountsDTO approveUser(Long userId, UserApprovalDTO userApprovalDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
-
         user.setApproved(true);
         userRepository.save(user);
 
         List<Account> existing = accountRepository.findByUser_Id(userId);
         if (existing.isEmpty()) {
-            accountRepository.save(buildDefaultAccount(user, "checking"));
-            accountRepository.save(buildDefaultAccount(user, "savings"));
+            List<AccountCreationDTO> accountCreationDTOs = List.of(userApprovalDTO.getCheckingAccount(), userApprovalDTO.getSavingsAccount());
+            for (AccountCreationDTO accountCreationDTO : accountCreationDTOs) {
+                accountRepository.save(buildDefaultAccount(user, accountCreationDTO));
+            }
         }
 
         return convertToUserWithAccountsDTO(user);
@@ -149,14 +145,18 @@ public class UserService {
         return dto;
     }
 
-    private Account buildDefaultAccount(User user, String accountType) {
+    private String generateIban(){
+        return "NL" + (90 + (int) (Math.random() * 10)) + "ELS" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+    }
+
+    private Account buildDefaultAccount(User user, AccountCreationDTO accountCreationDTO) {
         Account account = new Account();
         account.setUser(user);
-        account.setIban("NL" + (90 + (int) (Math.random() * 10)) + "ELS" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
-        account.setAccountType(accountType);
+        account.setIban(generateIban());
+        account.setAccountType(accountCreationDTO.getAccountType());
         account.setBalance(BigDecimal.ZERO);
-        account.setAbsoluteTransferLimit(new BigDecimal("1000.00"));
-        account.setDailyTransferLimit(new BigDecimal("5000.00"));
+        account.setAbsoluteTransferLimit(accountCreationDTO.getAbsoluteTransferLimit());
+        account.setDailyTransferLimit(accountCreationDTO.getDailyTransferLimit());
         account.setActive(true);
         account.setCreatedAt(LocalDateTime.now());
         return account;

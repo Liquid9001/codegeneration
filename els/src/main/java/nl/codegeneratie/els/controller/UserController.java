@@ -7,13 +7,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import nl.codegeneratie.els.dtos.LoginRequestDTO;
-import nl.codegeneratie.els.dtos.TokenResponseDTO;
-import nl.codegeneratie.els.dtos.UserDTO;
-import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
+import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,6 +43,7 @@ public class UserController {
                     )
             )
     })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public List<UserWithAccountsDTO> getAllUsers(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer limit
@@ -127,7 +126,10 @@ public class UserController {
     @Operation(
             summary = "Approve a user (employee only)",
             description = "Approve a registered user and automatically generate bank accounts",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = {
+                    @SecurityRequirement(name = "bearerAuth"),
+                    @SecurityRequirement(name = "basicAuth")
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -143,8 +145,9 @@ public class UserController {
                     description = "User not found"
             )
     })
-    public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(userService.approveUser(userId));
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId, @RequestBody UserApprovalDTO userApprovalDTO) {
+        return ResponseEntity.ok(userService.approveUser(userId, userApprovalDTO));
     }
 }
 
