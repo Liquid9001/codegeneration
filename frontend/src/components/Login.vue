@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
+  <div class="login-container">
     <h2>Login</h2>
-    <form @submit.prevent="login">
+    <form @submit.prevent="login" class="login-form">
       <div class="form-group">
         <label for="email">Email:</label>
         <input type="email" v-model="email" id="email" class="form-control" required />
@@ -35,8 +35,14 @@ export default {
           password: this.password,
         });
         const token = response.data.token;
-        useAuthStore().login(token);
-        this.$router.push('/');
+        const userResponse = await axios.get('http://localhost:8080/users/me', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const user = userResponse.data;
+        useAuthStore().login(token, user);
+        this.$router.push('/dashboard'); // Voeg een dashboard-pagina toe of verander naar de juiste route
       } catch (error) {
         console.error('Login failed:', error);
       }
@@ -46,5 +52,48 @@ export default {
 </script>
 
 <style scoped>
-/* Add any component-specific styles here */
+.login-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
 </style>

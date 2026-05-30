@@ -66,3 +66,43 @@ example json response:
 	"phoneNumber": 698765432,
 	"role": "CUSTOMER"
 }
+
+[GET] RETRIEVING user info (requires admin or employee, or requires authorizing with jwt token as the user)
+URL: http://localhost:8080/users/{userid} 
+
+example response: {
+	"accounts": [
+		{
+			"absoluteTransferLimit": 10000.00,
+			"accountType": "CHECKING",
+			"active": true,
+			"balance": 5000.00,
+			"createdAt": "2024-01-15T10:30:00",
+			"customerId": null,
+			"dailyTransferLimit": 20000.00,
+			"iban": "NL91ABNA0417164300",
+			"id": 1
+		},
+		{
+			"absoluteTransferLimit": 5000.00,
+			"accountType": "SAVINGS",
+			"active": true,
+			"balance": 15000.00,
+			"createdAt": "2024-02-01T14:20:00",
+			"customerId": null,
+			"dailyTransferLimit": 10000.00,
+			"iban": "NL47ABNA0123456789",
+			"id": 2
+		}
+	],
+	"approved": true,
+	"bsn": 123456789,
+	"createdAt": "2024-01-15T10:30:00",
+	"email": "john.doe@example.com",
+	"firstName": "John",
+	"id": 1,
+	"lastName": "Doe",
+	"password": null,
+	"phoneNumber": 612345678,
+	"role": "CUSTOMER"
+}
