@@ -38,12 +38,6 @@ export default {
         const token = response.data.token;
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.userId;
-
-        // Check if the user is authorized to retrieve user info
-        if (!this.isAuthorized(decodedToken.role)) {
-          throw new Error('Unauthorized');
-        }
-
         const userResponse = await axios.get(`http://localhost:8080/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`
