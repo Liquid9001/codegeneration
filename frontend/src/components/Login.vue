@@ -18,6 +18,7 @@
 <script>
 import { useAuthStore } from '../store/auth';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   name: 'Login',
@@ -35,18 +36,29 @@ export default {
           password: this.password,
         });
         const token = response.data.token;
-        const userResponse = await axios.get('http://localhost:8080/users/me', {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.userId;
+
+        // Check if the user is authorized to retrieve user info
+        if (!this.isAuthorized(decodedToken.role)) {
+          throw new Error('Unauthorized');
+        }
+
+        const userResponse = await axios.get(`http://localhost:8080/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
         const user = userResponse.data;
         useAuthStore().login(token, user);
-        this.$router.push('/dashboard'); // Voeg een dashboard-pagina toe of verander naar de juiste route
+        this.$router.push('/'); // Voeg een dashboard-pagina toe of verander naar de juiste route
       } catch (error) {
         console.error('Login failed:', error);
       }
     },
+    isAuthorized(role) {
+      return role === 'ADMIN' || role === 'EMPLOYEE';
+    }
   },
 };
 </script>

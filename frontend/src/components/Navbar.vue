@@ -23,16 +23,17 @@
 <script>
 import { useAuthStore } from '../store/auth';
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
   setup() {
     const authStore = useAuthStore();
     const isLoggedIn = computed(() => authStore.isLoggedIn);
     const currentUser = computed(() => authStore.currentUser);
-
+    const router = useRouter();
     const logout = () => {
       authStore.logout();
-      this.$router.push('/login');
+      router.push('/login');
     };
 
     return {
