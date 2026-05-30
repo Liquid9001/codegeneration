@@ -10,7 +10,8 @@
           <button @click="logout" class="btn btn-outline-danger">Logout</button>
         </div>
         <div v-else>
-          <router-link to="/login" class="btn btn-primary">Login</router-link>
+          <router-link to="/login" class="btn btn-primary me-2">Login</router-link>
+          <router-link to="/register" class="btn btn-secondary">Register</router-link>
         </div>
       </div>
     </div>
@@ -95,6 +96,25 @@ export default {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
+.btn-secondary {
+  background: linear-gradient(to right, #ff7e5f 0%, #feb47b 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 10px 20px;
+  margin-left: 10px;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
 .btn-outline-danger {
   background: transparent;
   color: white;
@@ -124,7 +144,7 @@ export default {
     font-size: 20px;
   }
   
-  .btn-primary, .btn-outline-danger {
+  .btn-primary, .btn-secondary, .btn-outline-danger {
     padding: 8px 15px;
     font-size: 14px;
   }
