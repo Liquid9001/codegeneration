@@ -1,8 +1,8 @@
 <template>
   <div class="bank-account">
     <div class="account-info">
-      <h4>{{ account.iban }}</h4>
-      <p>€ {{ account.balance | currencyFormat }}</p>
+      <h4 class="account-iban">{{ account.iban }}</h4>
+      <p class="account-balance">€ {{ account.balance | currencyFormat }}</p>
     </div>
     <span :class="accountTypeClass">{{ accountTypeLabel }}</span>
   </div>
@@ -50,30 +50,41 @@ export default {
 .bank-account {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-top: 15px;
   padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.bank-account:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .account-info {
   display: flex;
   flex-direction: column;
-  margin-right: 15px;
 }
 
-h4 {
+.account-iban {
   font-size: 1.2em;
-  color: #333;
+  color: white;
   margin-bottom: 5px;
+  font-weight: 600;
 }
 
-p {
-  font-size: 1em;
-  color: #666;
+.account-balance {
+  font-size: 1.1em;
+  color: #e0e0e0;
   margin-bottom: 5px;
+  font-weight: 500;
 }
 
 .checking-account,
@@ -81,13 +92,36 @@ p {
   display: block;
   font-size: 0.9em;
   margin-top: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-align: center;
+  width: fit-content;
 }
 
 .checking-account {
-  color: #007bff;
+  color: #4facfe;
+  background: rgba(79, 172, 254, 0.2);
 }
 
 .savings-account {
-  color: #28a745;
+  color: #00f2fe;
+  background: rgba(0, 242, 254, 0.2);
+}
+
+@media (max-width: 768px) {
+  .bank-account {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .account-iban {
+    font-size: 1.1em;
+  }
+  
+  .account-balance {
+    font-size: 1em;
+  }
 }
 </style>

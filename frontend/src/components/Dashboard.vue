@@ -1,10 +1,15 @@
 <template>
   <div class="dashboard">
-    <h1>{{ dashboardTitle }}</h1>
-    <div v-if="user.accounts && user.accounts.length > 0 && !isAdminOrEmployee">
+    <h1 class="dashboard-title">{{ dashboardTitle }}</h1>
+    <div v-if="user.accounts && user.accounts.length > 0 && !isAdminOrEmployee" class="accounts-container">
       <BankAccount v-for="account in user.accounts" :key="account.id" :account="account" />
     </div>
-    <p v-else-if="!isAdminOrEmployee && !user.approved">Een medewerker moet u eerst goedkeuren om een bankrekening te kunnen hebben.</p>
+    <div v-else-if="!isAdminOrEmployee && !user.approved" class="approval-message">
+      <p>Een medewerker moet u eerst goedkeuren om een bankrekening te kunnen hebben.</p>
+    </div>
+    <div v-else-if="isAdminOrEmployee" class="admin-content">
+      <p>Dit is de admin dashboard. Hier kunt u alle gebruikers en rekeningen beheren.</p>
+    </div>
   </div>
 </template>
 
@@ -46,11 +51,73 @@ export default {
 
 <style scoped>
 .dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 600;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+}
+
+.accounts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
   max-width: 800px;
-  margin: 50px auto;
+}
+
+.approval-message {
+  text-align: center;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-top: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+}
+
+.approval-message p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.admin-content {
+  text-align: center;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-top: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+}
+
+.admin-content p {
+  margin: 0;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 20px 10px;
+  }
+  
+  .dashboard-title {
+    font-size: 24px;
+  }
 }
 </style>
