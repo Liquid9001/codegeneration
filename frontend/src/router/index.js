@@ -1,13 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/Login.vue';
 import Dashboard from '../components/Dashboard.vue';
-import Users from '../components/admin/Users.vue'; // Aangepaste import-paad
+import Users from '../components/admin/Users.vue'; 
+import Register from '../components/Register.vue'; 
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login,
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
   },
   {
     path: '/',

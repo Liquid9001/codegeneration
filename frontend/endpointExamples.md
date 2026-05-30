@@ -241,3 +241,31 @@ Example decoded JWT token (eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNv
 }
 
 role could be "ADMIN", "CHECKING", "SAVINGS"
+
+[POST] Registering user 
+URL: http://localhost:8080/users
+
+example request:
+{
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": 612345678,
+  "bsn": 123456789,
+  "role": "CUSTOMER"
+}
+
+example response:
+{
+  "id": 1,
+  "email": "john.doe@example.com",
+  "password": null,
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": 612345678,
+  "bsn": 123456789,
+  "role": "CUSTOMER",
+  "approved": false,
+  "createdAt": "2026-05-30T15:42:18.123"
+}
