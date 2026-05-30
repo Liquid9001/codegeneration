@@ -8,7 +8,8 @@
       <p>Een medewerker moet u eerst goedkeuren om een bankrekening te kunnen hebben.</p>
     </div>
     <div v-else-if="isAdminOrEmployee" class="admin-content">
-      <p>Dit is de admin dashboard. Hier kunt u alle gebruikers en rekeningen beheren.</p>
+      <p>Dit is het admin dashboard. Hier kunt u alle gebruikers en rekeningen beheren.</p>
+      <router-link to="/admin/users" class="btn btn-primary">Gebruikers beheren</router-link>
     </div>
   </div>
 </template>
@@ -109,6 +110,25 @@ export default {
 .admin-content p {
   margin: 0;
   font-size: 16px;
+}
+
+.admin-content .btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-content .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 @media (max-width: 768px) {

@@ -6,9 +6,6 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <!-- Removed links for accounts, transactions, and customers -->
-        </ul>
         <div v-if="isLoggedIn" class="d-flex align-items-center">
           <button @click="logout" class="btn btn-outline-danger">Logout</button>
         </div>
@@ -36,10 +33,15 @@ export default {
       router.push('/login');
     };
 
+    const isEmployeeOrAdmin = computed(() => {
+      return currentUser.value && (currentUser.value.role === 'EMPLOYEE' || currentUser.value.role === 'ADMIN');
+    });
+
     return {
       isLoggedIn,
       currentUser,
-      logout
+      logout,
+      isEmployeeOrAdmin
     };
   }
 };
