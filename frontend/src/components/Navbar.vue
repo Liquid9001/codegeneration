@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">ELS</a>
+      <a class="navbar-brand" @click="home">ELS</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -29,6 +29,9 @@ export default {
     const isLoggedIn = computed(() => authStore.isLoggedIn);
     const currentUser = computed(() => authStore.currentUser);
     const router = useRouter();
+    const home = () => {
+      router.push('/');
+    };
     const logout = () => {
       authStore.logout();
       router.push('/login');
@@ -42,7 +45,8 @@ export default {
       isLoggedIn,
       currentUser,
       logout,
-      isEmployeeOrAdmin
+      isEmployeeOrAdmin,
+      home
     };
   }
 };
@@ -60,6 +64,7 @@ export default {
   font-size: 24px;
   color: white !important;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .navbar-toggler {
