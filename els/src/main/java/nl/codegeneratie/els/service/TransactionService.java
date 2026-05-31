@@ -27,7 +27,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final TransactionHelper transactionHelper;
-
+    private static final String ATM_IBAN = "NL99BANK0000000ATM1";
 
     public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionHelper transactionHelper) {
         this.transactionRepository = transactionRepository;
@@ -83,9 +83,13 @@ public class TransactionService {
     @Transactional
     public TransactionDTO deposit(TransactionDTO dto) {
         Account receiver = transactionHelper.getAccountByIban(dto.getReceiverIban(), "Destination");
+        Account atm = transactionHelper.getAccountByIban(ATM_IBAN, "ATM System");
 
         receiver.setBalance(receiver.getBalance().add(dto.getAmount()));
+        atm.setBalance(atm.getBalance().add(dto.getAmount()));
+
         accountRepository.save(receiver);
+        accountRepository.save(atm);
 
         return transactionHelper.createAndSaveTransactionRecord(dto, null, receiver);
     }
@@ -93,11 +97,19 @@ public class TransactionService {
     @Transactional
     public TransactionDTO withdrawal(TransactionDTO dto) {
         Account sender = transactionHelper.getAccountByIban(dto.getSenderIban(), "Source");
+        Account atm = transactionHelper.getAccountByIban(ATM_IBAN, "ATM System");
 
         transactionHelper.validateTransferLimits(sender, dto.getAmount());
 
+        if (atm.getBalance().compareTo(dto.getAmount()) < 0) {
+            throw new IllegalArgumentException("The ATM does not have enough physical cash to process this withdrawal.");
+        }
+
         sender.setBalance(sender.getBalance().subtract(dto.getAmount()));
+        atm.setBalance(atm.getBalance().subtract(dto.getAmount()));
+
         accountRepository.save(sender);
+        accountRepository.save(atm);
 
         return transactionHelper.createAndSaveTransactionRecord(dto, sender, null);
     }

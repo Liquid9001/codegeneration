@@ -78,16 +78,16 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionById(transactionId));
     }
     @PostMapping("/transfer")
-    @Operation(summary = "Transfer money between two accounts", security = {@SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Transfer money between two accounts", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     public ResponseEntity<TransactionDTO> transfer(@RequestBody TransactionDTO transactionDTO) {
-        // Enforce the transaction type for the database
+
         transactionDTO.setTransactionType("TRANSFER");
         TransactionDTO createdTransaction = transactionService.transfer(transactionDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 
     @PostMapping("/deposit")
-    @Operation(summary = "Deposit cash into an ATM (Requires receiverIban)", security = {@SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Deposit cash into an ATM (Requires receiverIban)", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     public ResponseEntity<TransactionDTO> deposit(@RequestBody TransactionDTO transactionDTO) {
         transactionDTO.setTransactionType("DEPOSIT");
         TransactionDTO createdTransaction = transactionService.deposit(transactionDTO);
@@ -95,7 +95,7 @@ public class TransactionController {
     }
 
     @PostMapping("/withdrawal")
-    @Operation(summary = "Withdraw cash from an ATM (Requires senderIban)", security = {@SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Withdraw cash from an ATM (Requires senderIban)", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     public ResponseEntity<TransactionDTO> withdrawal(@RequestBody TransactionDTO transactionDTO) {
         transactionDTO.setTransactionType("WITHDRAWAL");
         TransactionDTO createdTransaction = transactionService.withdrawal(transactionDTO);

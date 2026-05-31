@@ -15,16 +15,13 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
-    private final AtmSessionRepository atmSessionRepository;
 
     public DataInitializer(UserRepository userRepository,
                           AccountRepository accountRepository,
-                          TransactionRepository transactionRepository,
-                          AtmSessionRepository atmSessionRepository) {
+                          TransactionRepository transactionRepository) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
-        this.atmSessionRepository = atmSessionRepository;
     }
 
     @Override
