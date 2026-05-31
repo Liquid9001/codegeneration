@@ -16,11 +16,13 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long from_account_id;
-    private Long to_account_id;
-    private Long initiated_by_user_id;
+    private Long senderAccountId;
+    private Long receiverAccountId;
+    private Long initiatedByUserId;
+    private String senderIban;
+    private String receiverIban;
     private BigDecimal amount;
-    private String transaction_type;
+    private String transactionType;
     private String currency;
     private LocalDateTime timestamp;
     private String status;

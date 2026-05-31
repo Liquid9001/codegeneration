@@ -147,11 +147,11 @@ public class DataInitializer implements CommandLineRunner {
 
             // Create Transactions
             Transaction transaction1 = new Transaction();
-            transaction1.setFrom_account_id(1L);
-            transaction1.setTo_account_id(3L);
-            transaction1.setInitiated_by_user_id(1L);
+            transaction1.setSenderAccountId(1L);
+            transaction1.setReceiverAccountId(3L);
+            transaction1.setInitiatedByUserId(1L);
             transaction1.setAmount(new BigDecimal("250.00"));
-            transaction1.setTransaction_type("TRANSFER");
+            transaction1.setTransactionType("TRANSFER");
             transaction1.setCurrency("EUR");
             transaction1.setTimestamp(LocalDateTime.parse("2024-01-20 10:15:00", formatter));
             transaction1.setStatus("COMPLETED");
@@ -159,11 +159,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction1);
 
             Transaction transaction2 = new Transaction();
-            transaction2.setFrom_account_id(3L);
-            transaction2.setTo_account_id(1L);
-            transaction2.setInitiated_by_user_id(2L);
+            transaction2.setSenderAccountId(3L);
+            transaction2.setReceiverAccountId(1L);
+            transaction2.setInitiatedByUserId(2L);
             transaction2.setAmount(new BigDecimal("150.50"));
-            transaction2.setTransaction_type("TRANSFER");
+            transaction2.setTransactionType("TRANSFER");
             transaction2.setCurrency("EUR");
             transaction2.setTimestamp(LocalDateTime.parse("2024-01-21 12:30:00", formatter));
             transaction2.setStatus("COMPLETED");
@@ -171,11 +171,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction2);
 
             Transaction transaction3 = new Transaction();
-            transaction3.setFrom_account_id(1L);
-            transaction3.setTo_account_id(4L);
-            transaction3.setInitiated_by_user_id(1L);
+            transaction3.setSenderAccountId(1L);
+            transaction3.setReceiverAccountId(4L);
+            transaction3.setInitiatedByUserId(1L);
             transaction3.setAmount(new BigDecimal("500.00"));
-            transaction3.setTransaction_type("TRANSFER");
+            transaction3.setTransactionType("TRANSFER");
             transaction3.setCurrency("EUR");
             transaction3.setTimestamp(LocalDateTime.parse("2024-01-22 14:00:00", formatter));
             transaction3.setStatus("COMPLETED");
@@ -183,11 +183,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction3);
 
             Transaction transaction4 = new Transaction();
-            transaction4.setFrom_account_id(2L);
-            transaction4.setTo_account_id(5L);
-            transaction4.setInitiated_by_user_id(1L);
+            transaction4.setSenderAccountId(2L);
+            transaction4.setReceiverAccountId(5L);
+            transaction4.setInitiatedByUserId(1L);
             transaction4.setAmount(new BigDecimal("1000.00"));
-            transaction4.setTransaction_type("TRANSFER");
+            transaction4.setTransactionType("TRANSFER");
             transaction4.setCurrency("EUR");
             transaction4.setTimestamp(LocalDateTime.parse("2024-01-23 09:45:00", formatter));
             transaction4.setStatus("PENDING");
@@ -195,11 +195,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction4);
 
             Transaction transaction5 = new Transaction();
-            transaction5.setFrom_account_id(4L);
-            transaction5.setTo_account_id(1L);
-            transaction5.setInitiated_by_user_id(3L);
+            transaction5.setSenderAccountId(4L);
+            transaction5.setReceiverAccountId(1L);
+            transaction5.setInitiatedByUserId(3L);
             transaction5.setAmount(new BigDecimal("75.25"));
-            transaction5.setTransaction_type("TRANSFER");
+            transaction5.setTransactionType("TRANSFER");
             transaction5.setCurrency("EUR");
             transaction5.setTimestamp(LocalDateTime.parse("2024-01-24 11:20:00", formatter));
             transaction5.setStatus("COMPLETED");

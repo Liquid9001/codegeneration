@@ -13,19 +13,19 @@ public class TransactionDTO {
     private Long id;
 
     @Schema(description = "IBAN of the sender account", example = "NL91ABNA0417164300")
-    private String from_iban;
+    private String senderIban;
 
     @Schema(description = "IBAN of the receiver account", example = "NL91ABNA0417164301")
-    private String to_iban;
+    private String receiverIban;
 
     @Schema(description = "User who initiated the transaction", example = "1")
-    private Long initiated_by_user_id;
+    private Long initiatedByUserId;
 
     @Schema(description = "Transaction amount", example = "100.50")
     private BigDecimal amount;
 
     @Schema(description = "Type of transaction (TRANSFER, DEPOSIT, WITHDRAWAL, etc.)", example = "TRANSFER")
-    private String transaction_type;
+    private String transactionType;
 
     @Schema(description = "Currency code", example = "EUR")
     private String currency;
