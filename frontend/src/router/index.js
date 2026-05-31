@@ -3,6 +3,7 @@ import Login from '../components/Login.vue';
 import Dashboard from '../components/Dashboard.vue';
 import Users from '../components/admin/Users.vue'; 
 import Register from '../components/Register.vue'; 
+import ApproveUser from '../components/admin/ApproveUser.vue';
 
 const routes = [
   {
@@ -25,6 +26,12 @@ const routes = [
     path: '/admin/users',
     name: 'AdminUsers',
     component: Users,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/users/:id/approve',
+    name: 'ApproveUser',
+    component: ApproveUser,
     meta: { requiresAuth: true }
   },
 ];

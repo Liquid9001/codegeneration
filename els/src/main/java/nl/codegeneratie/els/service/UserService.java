@@ -3,6 +3,7 @@ package nl.codegeneratie.els.service;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.UserRole;
+import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
@@ -99,10 +100,8 @@ public class UserService {
 
         List<Account> existing = accountRepository.findByUser_Id(userId);
         if (existing.isEmpty()) {
-            List<AccountCreationDTO> accountCreationDTOs = List.of(userApprovalDTO.getCheckingAccount(), userApprovalDTO.getSavingsAccount());
-            for (AccountCreationDTO accountCreationDTO : accountCreationDTOs) {
-                accountRepository.save(buildDefaultAccount(user, accountCreationDTO));
-            }
+            accountRepository.save(buildDefaultAccount(user, userApprovalDTO.getCheckingAccount(), AccountType.CHECKING));
+            accountRepository.save(buildDefaultAccount(user, userApprovalDTO.getSavingsAccount(), AccountType.SAVINGS));
         }
 
         return convertToUserWithAccountsDTO(user);
@@ -149,11 +148,11 @@ public class UserService {
         return "NL" + (90 + (int) (Math.random() * 10)) + "ELS" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
     }
 
-    private Account buildDefaultAccount(User user, AccountCreationDTO accountCreationDTO) {
+    private Account buildDefaultAccount(User user, AccountCreationDTO accountCreationDTO, AccountType accountType) {
         Account account = new Account();
         account.setUser(user);
         account.setIban(generateIban());
-        account.setAccountType(accountCreationDTO.getAccountType());
+        account.setAccountType(accountType);
         account.setBalance(BigDecimal.ZERO);
         account.setAbsoluteTransferLimit(accountCreationDTO.getAbsoluteTransferLimit());
         account.setDailyTransferLimit(accountCreationDTO.getDailyTransferLimit());

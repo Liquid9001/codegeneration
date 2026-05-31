@@ -18,12 +18,10 @@ example url: http://localhost:8080/users/3/approve
 example json request:
 {
 	"savingsAccount": {
-		"accountType": "SAVINGS",
 		"absoluteTransferLimit": "5000.00",
 		"dailyTransferLimit": "500.00"
 	},
 	"checkingAccount": {
-		"accountType": "CHECKING",
 		"absoluteTransferLimit": "5000.00",
 		"dailyTransferLimit": "500.00"		
 	}

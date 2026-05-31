@@ -1,6 +1,7 @@
 <template>
   <div class="users-container">
     <h2>Niet-goedgekeurde Gebruikers</h2>
+    <button @click="goToDashboard" class="btn btn-primary">Terug naar Dashboard</button>
     <div class="pagination-controls">
       <button @click="previousPage" :disabled="offset === 0" class="btn btn-secondary">Vorige</button>
       <span>Pagina {{ currentPage }} van {{ totalPages }}</span>
@@ -15,6 +16,7 @@
           <th>BSN</th>
           <th>Telefoonnummer</th>
           <th>Aangemaakt op</th>
+          <th>Acties</th>
         </tr>
       </thead>
       <tbody>
@@ -25,6 +27,9 @@
           <td>{{ user.bsn }}</td>
           <td>{{ user.phoneNumber }}</td>
           <td>{{ formatDate(user.createdAt) }}</td>
+          <td>
+            <button @click="approveUser(user.id)" class="btn btn-success">Goedkeuren</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -84,6 +89,12 @@ export default {
     formatDate(dateString) {
       const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
       return new Date(dateString).toLocaleDateString('nl-NL', options);
+    },
+    goToDashboard() {
+      this.$router.push('/');
+    },
+    approveUser(userId) {
+      this.$router.push({ name: 'ApproveUser', params: { id: userId } });
     }
   }
 };
@@ -91,20 +102,40 @@ export default {
 
 <style scoped>
 .users-container {
-  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  margin: 20px auto;
-  max-width: 1000px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .users-container h2 {
   margin-bottom: 20px;
   font-size: 24px;
   letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  position: absolute;
+  top: 100px; /* Aangepast om niet te overlappen met de navbar */
+  right: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #00f2fe 0%, #4facfe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 
 .pagination-controls {
