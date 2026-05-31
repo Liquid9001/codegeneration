@@ -145,6 +145,17 @@ public class DataInitializer implements CommandLineRunner {
             account5.setCreatedAt(LocalDateTime.parse("2024-01-18 11:30:00", formatter));
             accountRepository.save(account5);
 
+            Account atmAccount = new Account();
+            atmAccount.setUser(user5); // Attached to the Admin user
+            atmAccount.setIban("NL99BANK0000000ATM1");
+            atmAccount.setAccountType("CHECKING");
+            atmAccount.setBalance(new BigDecimal("10000.00")); // €10,000 physical cash inside!
+            atmAccount.setAbsoluteTransferLimit(new BigDecimal("0.00"));
+            atmAccount.setDailyTransferLimit(new BigDecimal("999999.00")); // Machines don't have daily limits
+            atmAccount.setActive(true);
+            atmAccount.setCreatedAt(LocalDateTime.now());
+            accountRepository.save(atmAccount);
+
             // Create Transactions
             Transaction transaction1 = new Transaction();
             transaction1.setSenderAccountId(1L);
@@ -206,44 +217,8 @@ public class DataInitializer implements CommandLineRunner {
             transaction5.setDescription("Payment for services rendered");
             transactionRepository.save(transaction5);
 
-            // Create ATM Sessions
-            AtmSession session1 = new AtmSession();
-            session1.setCustomer_id(1L);
-            session1.setLogin_time(LocalDateTime.parse("2024-01-25 08:00:00", formatter));
-            session1.setLogout_time(LocalDateTime.parse("2024-01-25 08:15:00", formatter));
-            session1.setActive(false);
-            atmSessionRepository.save(session1);
-
-            AtmSession session2 = new AtmSession();
-            session2.setCustomer_id(2L);
-            session2.setLogin_time(LocalDateTime.parse("2024-01-25 10:30:00", formatter));
-            session2.setLogout_time(LocalDateTime.parse("2024-01-25 10:45:00", formatter));
-            session2.setActive(false);
-            atmSessionRepository.save(session2);
-
-            AtmSession session3 = new AtmSession();
-            session3.setCustomer_id(3L);
-            session3.setLogin_time(LocalDateTime.parse("2024-01-25 14:00:00", formatter));
-            session3.setLogout_time(null);
-            session3.setActive(true);
-            atmSessionRepository.save(session3);
-
-            AtmSession session4 = new AtmSession();
-            session4.setCustomer_id(4L);
-            session4.setLogin_time(LocalDateTime.parse("2024-01-25 16:20:00", formatter));
-            session4.setLogout_time(LocalDateTime.parse("2024-01-25 16:30:00", formatter));
-            session4.setActive(false);
-            atmSessionRepository.save(session4);
-
-            AtmSession session5 = new AtmSession();
-            session5.setCustomer_id(1L);
-            session5.setLogin_time(LocalDateTime.parse("2024-01-26 09:00:00", formatter));
-            session5.setLogout_time(null);
-            session5.setActive(true);
-            atmSessionRepository.save(session5);
-
             System.out.println("✓ Database initialized with sample data!");
-            System.out.println("✓ 5 Users, 5 Accounts, 5 Transactions, 5 ATM Sessions created");
+            System.out.println("✓ 5 Users, 5 Accounts, 5 Transactions created");
         }
     }
 }
