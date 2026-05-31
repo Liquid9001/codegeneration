@@ -1,32 +1,27 @@
 <template>
   <div id="app">
-    <AppNavbar v-if="showNavbar" />
-    <main class="flex-grow-1">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </main>
-    <AppToast />
+    <Navbar />
+    <router-view></router-view>
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import AppNavbar from './components/AppNavbar.vue'
-import AppToast from './components/AppToast.vue'
+<script>
+import Navbar from './components/Navbar.vue';
 
-const route = useRoute()
-const noNavRoutes = ['Login', 'Register']
-const showNavbar = computed(() => !noNavRoutes.includes(route.name))
+export default {
+  name: 'App',
+  components: {
+    Navbar
+  }
+};
 </script>
 
 <style>
 #app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
 }
 </style>
