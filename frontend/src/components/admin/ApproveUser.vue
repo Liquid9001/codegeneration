@@ -18,8 +18,10 @@
         <label for="savingsAccountDailyLimit">Dagelijkse betaallimiet Spaarrekening:</label>
         <input type="text" id="savingsAccountDailyLimit" v-model="savingsAccount.dailyTransferLimit" required />
       </div>
-      <button type="submit" class="btn btn-success">Goedkeuren</button>
-      <button @click="goBack" class="btn btn-secondary">Terug</button>
+      <div class="horizontal-buttons">
+        <button @click="goBack" class="btn btn-secondary">Annuleren</button>
+        <button type="submit" class="btn btn-success">Goedkeuren</button>
+      </div>
     </form>
   </div>
 </template>
@@ -47,7 +49,7 @@ export default {
       try {
         const token = useAuthStore().token;
         const userId = this.$route.params.id;
-        const response = await axios.post(`http://localhost:8080/users/${userId}`, {
+        const response = await axios.post(`http://localhost:8080/users/${userId}/approve`, {
           checkingAccount: this.checkingAccount,
           savingsAccount: this.savingsAccount
         }, {
@@ -78,6 +80,10 @@ export default {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.horizontal-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .approve-user-container h2 {
