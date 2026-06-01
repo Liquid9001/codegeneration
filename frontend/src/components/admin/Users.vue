@@ -58,7 +58,8 @@ export default {
     async fetchUsers() {
       try {
         const token = useAuthStore().token;
-        const response = await axios.get(`http://localhost:8080/users?offset=${this.offset}&limit=${this.limit}`, {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const response = await axios.get(`${apiUrl}/users?offset=${this.offset}&limit=${this.limit}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

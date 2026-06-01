@@ -46,10 +46,11 @@ export default {
   },
   methods: {
     async approveUser() {
-      try {
+      try {        
+        const apiUrl = import.meta.env.VITE_API_URL
         const token = useAuthStore().token;
         const userId = this.$route.params.id;
-        const response = await axios.post(`http://localhost:8080/users/${userId}/approve`, {
+        const response = await axios.post(`${apiUrl}/users/${userId}/approve`, {
           checkingAccount: this.checkingAccount,
           savingsAccount: this.savingsAccount
         }, {
