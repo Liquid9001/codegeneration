@@ -4,6 +4,7 @@ import Dashboard from '../components/Dashboard.vue';
 import Users from '../components/admin/Users.vue'; 
 import Register from '../components/Register.vue'; 
 import ApproveUser from '../components/admin/ApproveUser.vue';
+import BankAccounts from '../components/admin/BankAccounts.vue';
 
 const routes = [
   {
@@ -26,6 +27,12 @@ const routes = [
     path: '/admin/users',
     name: 'AdminUsers',
     component: Users,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/bankaccounts',
+    name: 'BankAccounts',
+    component: BankAccounts,
     meta: { requiresAuth: true }
   },
   {
