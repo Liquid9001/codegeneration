@@ -267,3 +267,18 @@ example response:
   "approved": false,
   "createdAt": "2026-05-30T15:42:18.123"
 }
+
+[GET] Get bank account details
+Example URL: http://localhost:8080/accounts/1
+example response:
+{
+	"absoluteTransferLimit": 10000.00,
+	"accountType": "CHECKING",
+	"active": true,
+	"balance": 5000.00,
+	"createdAt": "2024-01-15T10:30:00",
+	"customerId": null,
+	"dailyTransferLimit": 20000.00,
+	"iban": "NL91ABNA0417164300",
+	"id": 1
+}
