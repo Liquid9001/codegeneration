@@ -4,6 +4,7 @@ import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.Transaction;
 import nl.codegeneratie.els.dtos.TransactionDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
+import nl.codegeneratie.els.exceptions.TransactionNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.TransactionRepository;
 import nl.codegeneratie.els.service.helpers.TransactionHelper;
@@ -60,7 +61,7 @@ public class TransactionService {
 
     public TransactionDTO getTransactionById(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + transactionId));
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
         return transactionHelper.convertToDTO(transaction);
     }
 

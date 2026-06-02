@@ -69,6 +69,13 @@ public class TransactionHelper {
 			transaction.setTimestamp(LocalDateTime.now());
 		}
 
+		if (transaction.getCurrency() == null) {
+			transaction.setCurrency("EUR");
+		}
+		if (transaction.getStatus() == null) {
+			transaction.setStatus("COMPLETED");
+		}
+
 		return convertToDTO(transactionRepository.save(transaction));
 	}
 
