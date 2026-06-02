@@ -32,15 +32,16 @@ export default {
   },
   methods: {
     async login() {
+      const apiUrl = import.meta.env.VITE_API_URL
       try {
-        const response = await axios.post('http://localhost:8080/users/login', {
+        const response = await axios.post(`${apiUrl}/users/login`, {
           email: this.email,
           password: this.password,
         });
         const token = response.data.token;
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.userId;
-        const userResponse = await axios.get(`http://localhost:8080/users/${userId}`, {
+        const userResponse = await axios.get(`${apiUrl}/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

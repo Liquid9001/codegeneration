@@ -85,9 +85,9 @@ export default {
         this.errors.bsn = 'BSN moet 9 cijfers lang zijn.';
         return;
       }
-
+      const apiUrl = import.meta.env.VITE_API_URL;
       try {
-        const response = await axios.post('http://localhost:8080/users', {
+        const response = await axios.post(`${apiUrl}/users`, {
           email: this.email,
           password: this.password,
           firstName: this.firstName,

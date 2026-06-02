@@ -10,6 +10,7 @@
     <div v-else-if="isAdminOrEmployee" class="admin-content">
       <p>Dit is het admin dashboard. Hier kunt u alle gebruikers en rekeningen beheren.</p>
       <router-link to="/admin/users" class="btn btn-primary">Gebruikers beheren</router-link>
+      <router-link to="/admin/bankaccounts" class="btn btn-primary">Bankrekeningen beheren</router-link>
     </div>
   </div>
 </template>
