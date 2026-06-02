@@ -85,7 +85,6 @@ export default {
         this.errors.bsn = 'BSN moet 9 cijfers lang zijn.';
         return;
       }
-
       try {
         const response = await api.post('/users', {
           email: this.email,

@@ -6,6 +6,7 @@ import nl.codegeneratie.els.dtos.TokenResponseDTO;
 import nl.codegeneratie.els.dtos.UserDTO;
 import nl.codegeneratie.els.exceptions.InvalidCredentialsException;
 import nl.codegeneratie.els.exceptions.UserRegistrationException;
+import nl.codegeneratie.els.mappers.AccountMapper;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.UserRepository;
 import nl.codegeneratie.els.security.JwtService;
@@ -33,6 +34,8 @@ class UserServiceTest {
     void setUp() {
         userRepository = mock(UserRepository.class);
         AccountRepository accountRepository = mock(AccountRepository.class);
+        AccountService accountService = mock(AccountService.class);
+        AccountMapper accountMapper = mock(AccountMapper.class);
         JwtService jwtService = new JwtService(
                 "testOnlyJwtSecretKeyForElsMustBeAtLeast32Bytes",
                 3600000
@@ -40,7 +43,9 @@ class UserServiceTest {
         userService = new UserService(
                 userRepository,
                 accountRepository,
-                jwtService
+                accountService,
+                jwtService,
+                accountMapper
         );
     }
 

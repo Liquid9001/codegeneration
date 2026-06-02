@@ -6,6 +6,7 @@ import nl.codegeneratie.els.domain.enums.UserRole;
 import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.InvalidCredentialsException;
+import nl.codegeneratie.els.mappers.AccountMapper;
 import nl.codegeneratie.els.exceptions.UserNotFoundException;
 import nl.codegeneratie.els.exceptions.UserRegistrationException;
 import nl.codegeneratie.els.repository.AccountRepository;
@@ -16,11 +17,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,17 +28,23 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService;
+    private final AccountMapper accountMapper;
 
     public UserService(
             UserRepository userRepository,
             AccountRepository accountRepository,
-            JwtService jwtService
+            AccountService accountService,
+            JwtService jwtService,
+            AccountMapper accountMapper
     ) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.jwtService = jwtService;
+        this.accountMapper = accountMapper;
     }
 
     public List<UserWithAccountsDTO> getAllUsers(Integer offset, Integer limit) {
@@ -107,15 +112,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
         user.setApproved(true);
         userRepository.save(user);
-
-        List<Account> existing = accountRepository.findByUser_Id(userId);
-        if (existing.isEmpty()) {
-            List<AccountCreationDTO> accountCreationDTOs = List.of(userApprovalDTO.getCheckingAccount(), userApprovalDTO.getSavingsAccount());
-            for (AccountCreationDTO accountCreationDTO : accountCreationDTOs) {
-                accountRepository.save(buildDefaultAccount(user, accountCreationDTO));
-            }
-        }
-
+        accountService.createDefaultAccountsIfNeeded(user, userApprovalDTO.getCheckingAccount(), userApprovalDTO.getSavingsAccount());
         return convertToUserWithAccountsDTO(user);
     }
 
@@ -144,33 +141,10 @@ public class UserService {
         dto.setPassword(null);
         List<AccountDTO> accounts = accountRepository.findByUser_Id(user.getId())
                 .stream()
-                .map(this::toAccountDTO)
+                .map(accountMapper::toAccountDTO)
                 .collect(Collectors.toList());
         dto.setAccounts(accounts);
         return dto;
-    }
-
-    private AccountDTO toAccountDTO(Account account) {
-        AccountDTO dto = new AccountDTO();
-        BeanUtils.copyProperties(account, dto);
-        return dto;
-    }
-
-    private String generateIban(){
-        return "NL" + (90 + (int) (Math.random() * 10)) + "ELS" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
-    }
-
-    private Account buildDefaultAccount(User user, AccountCreationDTO accountCreationDTO) {
-        Account account = new Account();
-        account.setUser(user);
-        account.setIban(generateIban());
-        account.setAccountType(accountCreationDTO.getAccountType());
-        account.setBalance(BigDecimal.ZERO);
-        account.setAbsoluteTransferLimit(accountCreationDTO.getAbsoluteTransferLimit());
-        account.setDailyTransferLimit(accountCreationDTO.getDailyTransferLimit());
-        account.setActive(true);
-        account.setCreatedAt(LocalDateTime.now());
-        return account;
     }
 
     private void validateRegistration(UserDTO userDTO) {

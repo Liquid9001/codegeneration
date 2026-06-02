@@ -18,12 +18,10 @@ example url: http://localhost:8080/users/3/approve
 example json request:
 {
 	"savingsAccount": {
-		"accountType": "SAVINGS",
 		"absoluteTransferLimit": "5000.00",
 		"dailyTransferLimit": "500.00"
 	},
 	"checkingAccount": {
-		"accountType": "CHECKING",
 		"absoluteTransferLimit": "5000.00",
 		"dailyTransferLimit": "500.00"		
 	}
@@ -268,4 +266,19 @@ example response:
   "role": "CUSTOMER",
   "approved": false,
   "createdAt": "2026-05-30T15:42:18.123"
+}
+
+[GET] Get bank account details
+Example URL: http://localhost:8080/accounts/1
+example response:
+{
+	"absoluteTransferLimit": 10000.00,
+	"accountType": "CHECKING",
+	"active": true,
+	"balance": 5000.00,
+	"createdAt": "2024-01-15T10:30:00",
+	"customerId": null,
+	"dailyTransferLimit": 20000.00,
+	"iban": "NL91ABNA0417164300",
+	"id": 1
 }

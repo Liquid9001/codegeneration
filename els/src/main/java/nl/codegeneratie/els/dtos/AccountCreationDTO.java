@@ -17,11 +17,6 @@ import java.time.LocalDateTime;
 @Schema(description = "Bank Account Creation DTO")
 public class AccountCreationDTO {
     @NotNull
-    @Schema(description = "Account Type (SAVINGS, CHECKING, etc.)", example = "CHECKING")
-    @Enumerated(EnumType.STRING)
-    private AccountType accountType;
-
-    @NotNull
     @PositiveOrZero
     @Schema(description = "Transaction absolute transfer limit", example = "5000.00")
     private BigDecimal absoluteTransferLimit;
