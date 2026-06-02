@@ -40,12 +40,13 @@ public class AccountService {
         return convertToDTO(account);
     }
 
-    public AccountDTO updateAccount(Long accountId, AccountDTO accountDTO) {
+    public AccountDTO updateAccountTransferLimits(Long accountId, AccountTransferLimitsDTO limitsDTO) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
-        BeanUtils.copyProperties(accountDTO, account, "id");
-        Account updatedAccount = accountRepository.save(account);
-        return convertToDTO(updatedAccount);
+        account.setDailyTransferLimit(limitsDTO.getDailyTransferLimit());
+        account.setAbsoluteTransferLimit(limitsDTO.getAbsoluteTransferLimit());
+        accountRepository.save(account);
+        return convertToDTO(account);
     }
 
     public void deleteAccount(Long accountId) {
