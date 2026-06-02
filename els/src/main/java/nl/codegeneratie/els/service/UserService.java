@@ -107,7 +107,7 @@ public class UserService {
         return new TokenResponseDTO(token);
     }
 
-    public UserWithAccountsDTO approveUser(Long userId, UserApprovalDTO userApprovalDTO) {
+    public UserWithAccountsDTO approveUser(Long userId, UserTransferLimitsDTO userApprovalDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         user.setApproved(true);

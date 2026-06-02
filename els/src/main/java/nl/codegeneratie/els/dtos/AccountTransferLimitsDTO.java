@@ -1,21 +1,15 @@
 package nl.codegeneratie.els.dtos;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
-import nl.codegeneratie.els.domain.enums.AccountType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
-@Schema(description = "Bank Account Creation DTO")
-public class AccountCreationDTO {
+@Schema(description = "Set Transfer Limits of one Account DTO")
+public class AccountTransferLimitsDTO {
     @NotNull
     @PositiveOrZero
     @Schema(description = "Transaction absolute transfer limit", example = "5000.00")

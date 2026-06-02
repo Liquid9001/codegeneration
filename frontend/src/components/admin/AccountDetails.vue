@@ -3,7 +3,6 @@
     <h2>Bankrekening Details</h2>
     <button @click="goToBack" class="btn btn-primary">Terug naar Bankrekeningen</button>
     <div v-if="loading" class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
     </div>
     <div v-else-if="error" class="alert alert-danger">
       {{ error }}
@@ -13,7 +12,7 @@
         <tbody>
           <tr>
             <th>Gebruiker</th>
-            <td>{{ account.user.firstName }} {{ account.user.lastName }}</td>
+            <td>{{ account.firstName }} {{ account.lastName }}</td>
           </tr>
           <tr>
             <th>IBAN</th>
@@ -78,7 +77,7 @@ export default {
       }
     },
     goToBack() {
-      this.$router.push('/admin/accounts');
+      this.$router.push('/admin/bankaccounts');
     }
   }
 };

@@ -147,8 +147,8 @@ public class UserController {
             )
     })
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
-    public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId, @RequestBody UserApprovalDTO userApprovalDTO) {
-        return ResponseEntity.ok(userService.approveUser(userId, userApprovalDTO));
+    public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId, @RequestBody UserTransferLimitsDTO userTransferLimitsDTO) {
+        return ResponseEntity.ok(userService.approveUser(userId, userTransferLimitsDTO));
     }
 }
 

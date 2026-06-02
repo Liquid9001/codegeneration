@@ -3,9 +3,8 @@ package nl.codegeneratie.els.service;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.AccountType;
-import nl.codegeneratie.els.dtos.AccountCreationDTO;
+import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.dtos.AccountDTO;
-import nl.codegeneratie.els.dtos.UserApprovalDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -53,7 +51,8 @@ public class AccountService {
     public void deleteAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
-        accountRepository.delete(account);
+        account.setActive(false); // soft delete
+        accountRepository.save(account);
     }
 
     public List<AccountDTO> getAccountsByUser_Id(Long userId) {
@@ -68,20 +67,21 @@ public class AccountService {
                 .orElseThrow(() -> new IbanNotFoundException(iban));
     }
 
-    public List<Account> createDefaultAccountsIfNeeded(User user, AccountCreationDTO checkingAccountDTO, AccountCreationDTO savingsAccountDTO) {
+    public void createDefaultAccountsIfNeeded(User user, AccountTransferLimitsDTO checkingAccountLimitsDTO,
+                                              AccountTransferLimitsDTO savingsAccountLimitsDTO) {
         List<Account> existing = accountRepository.findByUser(user);
         if (existing.isEmpty()) {
-            Account checkingAccount = buildDefaultAccount(user, checkingAccountDTO, AccountType.CHECKING);
-            Account savingsAccount = buildDefaultAccount(user, savingsAccountDTO, AccountType.SAVINGS);
+            Account checkingAccount = buildDefaultAccount(user, checkingAccountLimitsDTO, AccountType.CHECKING);
+            Account savingsAccount = buildDefaultAccount(user, savingsAccountLimitsDTO, AccountType.SAVINGS);
             accountRepository.save(checkingAccount);
             accountRepository.save(savingsAccount);
-            return List.of(checkingAccount, savingsAccount);
         }
-        return existing;
     }
 
     private AccountDTO convertToDTO(Account account) {
         AccountDTO accountDTO = new AccountDTO();
+        accountDTO.setFirstName(account.getUser().getFirstName());
+        accountDTO.setLastName(account.getUser().getLastName());
         BeanUtils.copyProperties(account, accountDTO);
         return accountDTO;
     }
@@ -95,7 +95,7 @@ public class AccountService {
         return iban;
     }
 
-    private Account buildDefaultAccount(User user, AccountCreationDTO accountCreationDTO, AccountType accountType) {
+    private Account buildDefaultAccount(User user, AccountTransferLimitsDTO accountCreationDTO, AccountType accountType) {
         Account account = new Account();
         account.setUser(user);
         account.setIban(generateIban());
