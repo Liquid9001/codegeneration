@@ -156,7 +156,7 @@ public class DataInitializer implements CommandLineRunner {
             Account atmAccount = new Account();
             atmAccount.setUser(user5); // Attached to the Admin user
             atmAccount.setIban("NL99BANK0000000ATM1");
-            atmAccount.setAccountType("CHECKING");
+            atmAccount.setAccountType(AccountType.CHECKING);
             atmAccount.setBalance(new BigDecimal("10000.00")); // €10,000 physical cash inside!
             atmAccount.setAbsoluteTransferLimit(new BigDecimal("0.00"));
             atmAccount.setDailyTransferLimit(new BigDecimal("999999.00")); // Machines don't have daily limits

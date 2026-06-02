@@ -1,6 +1,7 @@
 package nl.codegeneratie.els.transaction;
 
 import nl.codegeneratie.els.domain.Account;
+import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.TransactionDTO;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.TransactionRepository;
@@ -29,7 +30,7 @@ abstract class AbstractTransactionIntegrationTest {
     protected Account createAccount(String balance, String absoluteLimit, String dailyLimit) {
         Account account = new Account();
         account.setIban("TEST" + UUID.randomUUID().toString().replace("-", ""));
-        account.setAccountType("CHECKING");
+        account.setAccountType(AccountType.CHECKING);
         account.setBalance(new BigDecimal(balance));
         account.setAbsoluteTransferLimit(new BigDecimal(absoluteLimit));
         account.setDailyTransferLimit(new BigDecimal(dailyLimit));
