@@ -1,28 +1,44 @@
 package nl.codegeneratie.els.service;
 
 import nl.codegeneratie.els.domain.Account;
+import nl.codegeneratie.els.domain.User;
+import nl.codegeneratie.els.domain.enums.AccountType;
+import nl.codegeneratie.els.dtos.AccountCreationDTO;
 import nl.codegeneratie.els.dtos.AccountDTO;
+import nl.codegeneratie.els.dtos.UserApprovalDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
+import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
+import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final Random random = new Random();
+    private static final String IBAN_PREFIX = "NL00ELS0";
 
     public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 
     public AccountDTO getAccountById(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        Long ownerId = account.getUser().getId();
+        if (!SecurityUtil.isEmployeeOrAdmin() && !ownerId.equals(currentUserId)) {
+            throw new ForbiddenException();
+        }
         return convertToDTO(account);
     }
 
@@ -52,10 +68,44 @@ public class AccountService {
                 .orElseThrow(() -> new IbanNotFoundException(iban));
     }
 
+    public List<Account> createDefaultAccountsIfNeeded(User user, AccountCreationDTO checkingAccountDTO, AccountCreationDTO savingsAccountDTO) {
+        List<Account> existing = accountRepository.findByUser(user);
+        if (existing.isEmpty()) {
+            Account checkingAccount = buildDefaultAccount(user, checkingAccountDTO, AccountType.CHECKING);
+            Account savingsAccount = buildDefaultAccount(user, savingsAccountDTO, AccountType.SAVINGS);
+            accountRepository.save(checkingAccount);
+            accountRepository.save(savingsAccount);
+            return List.of(checkingAccount, savingsAccount);
+        }
+        return existing;
+    }
+
     private AccountDTO convertToDTO(Account account) {
         AccountDTO accountDTO = new AccountDTO();
         BeanUtils.copyProperties(account, accountDTO);
         return accountDTO;
+    }
+
+    private String generateIban() {
+        String iban = "";
+        do {
+            iban = IBAN_PREFIX + String.format("%09d", random.nextInt(1_000_000_000));
+
+        } while (accountRepository.existsByIban(iban));
+        return iban;
+    }
+
+    private Account buildDefaultAccount(User user, AccountCreationDTO accountCreationDTO, AccountType accountType) {
+        Account account = new Account();
+        account.setUser(user);
+        account.setIban(generateIban());
+        account.setAccountType(accountType);
+        account.setBalance(BigDecimal.ZERO);
+        account.setAbsoluteTransferLimit(accountCreationDTO.getAbsoluteTransferLimit());
+        account.setDailyTransferLimit(accountCreationDTO.getDailyTransferLimit());
+        account.setActive(true);
+        account.setCreatedAt(LocalDateTime.now());
+        return account;
     }
 }
 

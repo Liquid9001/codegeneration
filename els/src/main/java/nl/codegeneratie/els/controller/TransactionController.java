@@ -11,6 +11,7 @@ import nl.codegeneratie.els.dtos.TransactionDTO;
 import nl.codegeneratie.els.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -43,6 +44,7 @@ public class TransactionController {
                     )
             )
     })
+    @PreAuthorize("isAuthenticated()")
     public List<TransactionDTO> getAllTransactions(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer limit,

@@ -10,8 +10,10 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByEmail(String email);
+	boolean existsByEmail(String email);
+	boolean existsByBsn(Integer bsn);
 
-	@Query("select u from User u where u.first_name = :firstName and u.last_name = :lastName")
+	@Query("select u from User u where u.firstName = :firstName and u.lastName = :lastName")
 	List<User> findByFirstAndLastName(
 			@Param("firstName") String firstName,
 			@Param("lastName") String lastName

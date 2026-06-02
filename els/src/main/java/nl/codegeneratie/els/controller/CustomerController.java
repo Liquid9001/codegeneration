@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nl.codegeneratie.els.dtos.CustomerSearchDTO;
 import nl.codegeneratie.els.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,9 +43,10 @@ public class CustomerController {
                     )
             )
     })
+    @PreAuthorize("isAuthenticated()")
     public List<CustomerSearchDTO> searchCustomers(
-            @RequestParam(name = "first_name") String firstName,
-            @RequestParam(name = "last_name") String lastName
+            @RequestParam(name = "firstName") String firstName,
+            @RequestParam(name = "lastName") String lastName
     ) {
         return userService.searchCustomers(firstName, lastName);
     }

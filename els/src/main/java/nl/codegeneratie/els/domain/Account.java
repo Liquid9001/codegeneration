@@ -3,6 +3,7 @@ package nl.codegeneratie.els.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.codegeneratie.els.domain.enums.AccountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,7 +24,9 @@ public class Account {
     private String iban;
 
     @Column(name = "account_type")
-    private String accountType;
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
+
     private BigDecimal balance;
 
     @Column(name = "absolute_transfer_limit")
