@@ -7,7 +7,6 @@ import nl.codegeneratie.els.dtos.CustomerSearchDTO;
 import nl.codegeneratie.els.dtos.TokenResponseDTO;
 import nl.codegeneratie.els.dtos.UserDTO;
 import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
-import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.exceptions.UserNotFoundException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.UserRepository;
@@ -19,7 +18,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
