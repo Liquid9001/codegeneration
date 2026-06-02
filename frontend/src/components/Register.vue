@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '../api';
 
 export default {
   name: 'Register',
@@ -87,7 +87,7 @@ export default {
       }
 
       try {
-        const response = await axios.post('http://localhost:8080/users', {
+        const response = await api.post('/users', {
           email: this.email,
           password: this.password,
           firstName: this.firstName,
@@ -100,9 +100,7 @@ export default {
         this.$router.push('/login'); // Redirect to login page after successful registration
       } catch (error) {
         console.error('Registratie mislukt:', error);
-        if (error.response && error.response.data.message) {
-          this.errors.global = error.response.data.message;
-        }
+        this.errors.global = error.response?.data?.error || 'Registratie mislukt. Probeer het opnieuw.';
       }
     },
     validateEmail(email) {

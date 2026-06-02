@@ -32,8 +32,7 @@
 </template>
 
 <script>
-import axios from 'axios';
-import { useAuthStore } from '../../store/auth';
+import api from '../../api';
 
 export default {
   name: 'Users',
@@ -52,12 +51,7 @@ export default {
   methods: {
     async fetchUsers() {
       try {
-        const token = useAuthStore().token;
-        const response = await axios.get(`http://localhost:8080/users?offset=${this.offset}&limit=${this.limit}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await api.get(`/users?offset=${this.offset}&limit=${this.limit}`);
         
         // Filter users that are not approved
         this.users = response.data.filter(user => !user.approved);

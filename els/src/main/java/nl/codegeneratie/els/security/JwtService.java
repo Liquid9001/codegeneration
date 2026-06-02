@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 
 import nl.codegeneratie.els.domain.User;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -15,22 +16,28 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET =
-            "verySecretKeyVerySecretKeyVerySecretKey123456";
+    private final Key key;
+    private final long expirationMs;
 
-    private final Key key =
-            Keys.hmacShaKeyFor(SECRET.getBytes());
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration-ms}") long expirationMs
+    ) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.expirationMs = expirationMs;
+    }
 
     public String generateToken(User user) {
 
         return Jwts.builder()
                 .setSubject(user.getEmail())
+                .claim("email", user.getEmail())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
                 .claim("approved", user.isApproved())
                 .setIssuedAt(new Date())
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + 86400000)
+                        new Date(System.currentTimeMillis() + expirationMs)
                 )
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();

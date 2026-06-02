@@ -11,6 +11,7 @@
           <label for="password" class="form-label">Wachtwoord</label>
           <input type="password" v-model="password" id="password" class="form-control" required />
         </div>
+        <span v-if="errorMessage" class="error">{{ errorMessage }}</span>
         <button type="submit" class="btn btn-primary">Inloggen</button>
       </form>
     </div>
@@ -19,7 +20,7 @@
 
 <script>
 import { useAuthStore } from '../store/auth';
-import axios from 'axios';
+import api from '../api';
 import { jwtDecode } from 'jwt-decode';
 
 export default {
@@ -28,19 +29,22 @@ export default {
     return {
       email: '',
       password: '',
+      errorMessage: '',
     };
   },
   methods: {
     async login() {
+      this.errorMessage = '';
+
       try {
-        const response = await axios.post('http://localhost:8080/users/login', {
+        const response = await api.post('/users/login', {
           email: this.email,
           password: this.password,
         });
         const token = response.data.token;
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.userId;
-        const userResponse = await axios.get(`http://localhost:8080/users/${userId}`, {
+        const userResponse = await api.get(`/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -50,6 +54,7 @@ export default {
         this.$router.push('/'); // Voeg een dashboard-pagina toe of verander naar de juiste route
       } catch (error) {
         console.error('Login failed:', error);
+        this.errorMessage = error.response?.data?.error || 'Invalid credentials';
       }
     },
     isAuthorized(role) {
@@ -126,6 +131,13 @@ export default {
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
+}
+
+.error {
+  color: #ffdddd;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 .btn {

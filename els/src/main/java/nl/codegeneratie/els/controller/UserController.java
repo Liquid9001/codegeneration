@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -70,7 +71,7 @@ public class UserController {
                     description = "Invalid input or email already used"
             )
     })
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
         UserDTO createdUser = userService.createUser(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -94,7 +95,7 @@ public class UserController {
                     description = "Unauthorized - invalid credentials"
             )
     })
-    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequestDTO request) {
+    public ResponseEntity<TokenResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
         return ResponseEntity.ok(userService.login(request.getEmail(), request.getPassword()));
     }
 
