@@ -42,7 +42,7 @@ public class TransactionService {
             BigDecimal minAmount,
             BigDecimal maxAmount,
             String iban
-    ) {
+    ) {//look at request data, return page object, cleaner way to handle pagination data
         int pageSize = (limit != null && limit > 0) ? limit : 50;
         int pageNumber = (offset != null && offset >= 0) ? (offset / pageSize) : 0;
 

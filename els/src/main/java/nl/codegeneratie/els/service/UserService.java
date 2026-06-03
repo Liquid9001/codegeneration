@@ -29,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final AccountService accountService;
+    // use dependency injection with bean instead of making a new bcrypt...
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService;
     private final AccountMapper accountMapper;
