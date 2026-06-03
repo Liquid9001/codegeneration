@@ -5,6 +5,7 @@ import Users from '../components/admin/Users.vue';
 import Register from '../components/Register.vue'; 
 import ApproveUser from '../components/admin/ApproveUser.vue';
 import BankAccounts from '../components/admin/BankAccounts.vue';
+import AccountDetails from '../components/admin/AccountDetails.vue';
 import { useAuthStore } from '../store/auth';
 
 const routes = [
@@ -42,6 +43,12 @@ const routes = [
     path: '/admin/users/:id/approve',
     name: 'ApproveUser',
     component: ApproveUser,
+    meta: { requiresAuth: true, roles: ['ADMIN', 'EMPLOYEE'] }
+  },
+  {
+    path: '/admin/accounts/:accountId',
+    name: 'AccountDetails',
+    component: AccountDetails,
     meta: { requiresAuth: true, roles: ['ADMIN', 'EMPLOYEE'] }
   },
 ];
