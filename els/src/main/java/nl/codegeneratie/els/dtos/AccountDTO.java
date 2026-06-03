@@ -53,4 +53,12 @@ public class AccountDTO {
     @NotNull
     @Schema(description = "Account creation timestamp")
     private LocalDateTime createdAt;
+
+    @NotNull
+    @Schema(description = "First name of account owner")
+    private String firstName;
+
+    @NotNull
+    @Schema(description = "Last name of account owner")
+    private String lastName;
 }

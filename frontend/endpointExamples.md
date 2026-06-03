@@ -1,3 +1,6 @@
+IMPORTANT: Replace http://localhost:8080 with the ${apiUrl}
+Api URL can be retrieved by doing this: const apiUrl = import.meta.env.VITE_API_URL
+
 [POST] LOGGING IN AS A USER, returns token
 example url: http://localhost:8080/users/login
 
@@ -282,3 +285,37 @@ example response:
 	"iban": "NL91ABNA0417164300",
 	"id": 1
 }
+
+[PATCH] Update bank account transfer limit
+Example URL: http://localhost:8080/accounts/1
+example json:
+{
+  "absoluteTransferLimit": 250.00,
+  "dailyTransferLimit": 1000.00
+}
+
+example response:
+{
+	"absoluteTransferLimit": 250.00,
+	"accountType": "CHECKING",
+	"active": true,
+	"balance": 5000.00,
+	"createdAt": "2024-01-15T10:30:00",
+	"customerId": null,
+	"dailyTransferLimit": 1000.00,
+	"firstName": "John",
+	"iban": "NL91ABNA0417164300",
+	"id": 1,
+	"lastName": "Doe"
+}
+
+[DELETE] (Soft) Delete account {id}
+Example URL: http://localhost:8080/accounts/1
+example json:
+{
+  "absoluteTransferLimit": 250.00,
+  "dailyTransferLimit": 1000.00
+}
+
+example response:
+http 200 ok

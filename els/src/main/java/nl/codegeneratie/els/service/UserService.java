@@ -29,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final AccountService accountService;
+    // use dependency injection with bean instead of making a new bcrypt...
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtService jwtService;
     private final AccountMapper accountMapper;
@@ -107,7 +108,7 @@ public class UserService {
         return new TokenResponseDTO(token);
     }
 
-    public UserWithAccountsDTO approveUser(Long userId, UserApprovalDTO userApprovalDTO) {
+    public UserWithAccountsDTO approveUser(Long userId, UserTransferLimitsDTO userApprovalDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         user.setApproved(true);
@@ -139,7 +140,7 @@ public class UserService {
         UserWithAccountsDTO dto = new UserWithAccountsDTO();
         BeanUtils.copyProperties(user, dto);
         dto.setPassword(null);
-        List<AccountDTO> accounts = accountRepository.findByUser_Id(user.getId())
+        List<AccountDTO> accounts = accountRepository.findByUser_IdAndActiveTrue(user.getId())
                 .stream()
                 .map(accountMapper::toAccountDTO)
                 .collect(Collectors.toList());

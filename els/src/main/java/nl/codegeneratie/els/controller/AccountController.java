@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import nl.codegeneratie.els.dtos.AccountDTO;
+import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.service.AccountService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,9 +51,9 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getAccountById(accountId));
     }
 
-    @PutMapping("/{accountId}")
+    @PatchMapping("/{accountId}")
     @Operation(
-            summary = "Update account transfer limits or active status (employee only)",
+            summary = "Update account transfer limits (employee only)",
             security = {
                     @SecurityRequirement(name = "bearerAuth"),
                     @SecurityRequirement(name = "basicAuth")
@@ -73,8 +74,8 @@ public class AccountController {
             )
     })
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
-    public ResponseEntity<AccountDTO> updateAccount(@PathVariable Long accountId, @Valid @RequestBody AccountDTO accountDTO) {
-        AccountDTO updatedAccount = accountService.updateAccount(accountId, accountDTO);
+    public ResponseEntity<AccountDTO> updateAccountTransferLimits(@PathVariable Long accountId, @Valid @RequestBody AccountTransferLimitsDTO limitsDTO) {
+        AccountDTO updatedAccount = accountService.updateAccountTransferLimits(accountId, limitsDTO);
         return ResponseEntity.ok(updatedAccount);
     }
 

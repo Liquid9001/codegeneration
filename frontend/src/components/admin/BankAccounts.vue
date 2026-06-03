@@ -16,6 +16,7 @@
           <th>Balans</th>
           <th>Dagelijkse Overboekingslimiet</th>
           <th>Absolute Overboekingslimiet</th>
+          <th>Acties</th>
         </tr>
       </thead>
       <tbody>
@@ -26,6 +27,7 @@
           <td>€{{ account.balance.toFixed(2) }}</td>
           <td>€{{ account.dailyTransferLimit.toFixed(2) }}</td>
           <td>€{{ account.absoluteTransferLimit.toFixed(2) }}</td>
+          <td><button @click="goToAccountDetails(account.id)" class="btn btn-secondary">Beheren</button></td>
         </tr>
       </tbody>
     </table>
@@ -53,7 +55,7 @@ export default {
   methods: {
     async fetchAccounts() {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL
+        const apiUrl = import.meta.env.VITE_API_URL;
         const token = useAuthStore().token;
         const response = await axios.get(`${apiUrl}/users?offset=${this.offset}&limit=${this.limit}`, {
           headers: {
@@ -87,6 +89,9 @@ export default {
     },
     goToDashboard() {
       this.$router.push('/');
+    },
+    goToAccountDetails(accountId) {
+      this.$router.push(`/admin/accounts/${accountId}`);
     }
   },
   computed: {

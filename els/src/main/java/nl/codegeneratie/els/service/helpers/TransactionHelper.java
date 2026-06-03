@@ -32,7 +32,7 @@ public class TransactionHelper {
 		return accountRepository.findByIban(iban)
 				.orElseThrow(() -> new AccountNotFoundException(type + " account not found for IBAN: " + iban));
 	}
-
+	// move away from helper code, use policies talked about in java advanced
 	public void validateTransferLimits(Account sender, BigDecimal amount) {
 		if (sender.getBalance().compareTo(amount) < 0) {
 			throw new InsufficientFundsException("Insufficient funds to complete this transaction.");
