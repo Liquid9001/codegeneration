@@ -28,14 +28,16 @@
           </tr>
           <tr>
             <th>Dagelijkse Overboekingslimiet</th>
-            <td>€{{ account.dailyTransferLimit.toFixed(2) }}</td>
+            <td><input v-model="dailyTransferLimit" type="number" step="0.01" class="form-control"></td>
           </tr>
           <tr>
             <th>Absolute Overboekingslimiet</th>
-            <td>€{{ account.absoluteTransferLimit.toFixed(2) }}</td>
+            <td><input v-model="absoluteTransferLimit" type="number" step="0.01" class="form-control"></td>
           </tr>
         </tbody>
       </table>
+      <button @click="updateTransferLimits" class="btn btn-success">Overboekingslimieten bijwerken</button>
+      <button @click="deleteAccount" class="btn btn-danger">Bankrekening verwijderen</button>
     </div>
   </div>
 </template>
@@ -50,7 +52,9 @@ export default {
     return {
       account: null,
       loading: true,
-      error: null
+      error: null,
+      dailyTransferLimit: null,
+      absoluteTransferLimit: null
     };
   },
   async created() {
@@ -69,11 +73,51 @@ export default {
         });
 
         this.account = response.data;
+        this.dailyTransferLimit = this.account.dailyTransferLimit;
+        this.absoluteTransferLimit = this.account.absoluteTransferLimit;
       } catch (error) {
         console.error('Error fetching account details:', error);
         this.error = 'Er is een fout opgetreden bij het ophalen van de bankrekeningdetails.';
       } finally {
         this.loading = false;
+      }
+    },
+    async updateTransferLimits() {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const token = useAuthStore().token;
+        const accountId = this.$route.params.accountId;
+        const response = await axios.patch(`${apiUrl}/accounts/${accountId}`, {
+          dailyTransferLimit: parseFloat(this.dailyTransferLimit),
+          absoluteTransferLimit: parseFloat(this.absoluteTransferLimit)
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        this.account = response.data;
+        this.goToBack();
+      } catch (error) {
+        console.error('Error updating transfer limits:', error);
+        this.error = 'Er is een fout opgetreden bij het bijwerken van de overboekingslimieten.';
+      }
+    },
+    async deleteAccount() {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const token = useAuthStore().token;
+        const accountId = this.$route.params.accountId;
+        await axios.delete(`${apiUrl}/accounts/${accountId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        this.$router.push('/admin/bankaccounts');
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        this.error = 'Er is een fout opgetreden bij het verwijderen van de bankrekening.';
       }
     },
     goToBack() {
@@ -117,6 +161,42 @@ export default {
 
 .btn-primary:hover {
   background: linear-gradient(to right, #00f2fe 0%, #4facfe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-success {
+  margin-top: 20px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-success:hover {
+  background: linear-gradient(to right, #00f2fe 0%, #4facfe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger {
+  margin-top: 20px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(to right, #ff4d4f 0%, #ff1a1a 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(to right, #ff1a1a 0%, #ff4d4f 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }

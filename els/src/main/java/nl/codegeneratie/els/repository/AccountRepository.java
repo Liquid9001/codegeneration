@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
 	List<Account> findByUser_Id(Long userId);
+	List<Account> findByUser_IdAndActiveTrue(Long userId);
 	List<Account> findByUser(User user);
 	Optional<Account> findByIban(String iban);
 	boolean existsByIban(String iban);

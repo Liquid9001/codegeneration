@@ -8,6 +8,7 @@ import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
+import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +33,9 @@ public class AccountService {
 
     public AccountDTO getAccountById(Long accountId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
+        if (!account.isActive()) {
+            throw new AccountNotFoundException(accountId);
+        }
         Long currentUserId = SecurityUtil.getCurrentUserId();
         Long ownerId = account.getUser().getId();
         if (!SecurityUtil.isEmployeeOrAdmin() && !ownerId.equals(currentUserId)) {
@@ -43,10 +47,18 @@ public class AccountService {
     public AccountDTO updateAccountTransferLimits(Long accountId, AccountTransferLimitsDTO limitsDTO) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
+        validateLimits(limitsDTO);
         account.setDailyTransferLimit(limitsDTO.getDailyTransferLimit());
         account.setAbsoluteTransferLimit(limitsDTO.getAbsoluteTransferLimit());
         accountRepository.save(account);
         return convertToDTO(account);
+    }
+
+    private boolean areTransferLimitsValid(AccountTransferLimitsDTO limitsDTO) {
+        BigDecimal dailyTransferLimit = limitsDTO.getDailyTransferLimit();
+        BigDecimal absoluteTransferLimit = limitsDTO.getAbsoluteTransferLimit();
+        // Daily limit has to be higher than absolute limit, and both need to be higher than zero
+        return dailyTransferLimit.compareTo(absoluteTransferLimit) >= 0 && dailyTransferLimit.compareTo(BigDecimal.ZERO) > 0;
     }
 
     public void deleteAccount(Long accountId) {
@@ -70,12 +82,20 @@ public class AccountService {
 
     public void createDefaultAccountsIfNeeded(User user, AccountTransferLimitsDTO checkingAccountLimitsDTO,
                                               AccountTransferLimitsDTO savingsAccountLimitsDTO) {
+        validateLimits(checkingAccountLimitsDTO);
+        validateLimits(savingsAccountLimitsDTO);
         List<Account> existing = accountRepository.findByUser(user);
         if (existing.isEmpty()) {
             Account checkingAccount = buildDefaultAccount(user, checkingAccountLimitsDTO, AccountType.CHECKING);
             Account savingsAccount = buildDefaultAccount(user, savingsAccountLimitsDTO, AccountType.SAVINGS);
             accountRepository.save(checkingAccount);
             accountRepository.save(savingsAccount);
+        }
+    }
+
+    private void validateLimits(AccountTransferLimitsDTO dto) {
+        if (!areTransferLimitsValid(dto)) {
+            throw new InvalidTransferLimitsException(dto.getDailyTransferLimit(), dto.getAbsoluteTransferLimit());
         }
     }
 

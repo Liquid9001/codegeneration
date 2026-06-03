@@ -139,7 +139,7 @@ public class UserService {
         UserWithAccountsDTO dto = new UserWithAccountsDTO();
         BeanUtils.copyProperties(user, dto);
         dto.setPassword(null);
-        List<AccountDTO> accounts = accountRepository.findByUser_Id(user.getId())
+        List<AccountDTO> accounts = accountRepository.findByUser_IdAndActiveTrue(user.getId())
                 .stream()
                 .map(accountMapper::toAccountDTO)
                 .collect(Collectors.toList());
