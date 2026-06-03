@@ -31,7 +31,7 @@ public class CustomerController {
     @GetMapping("/search")
     @Operation(
             summary = "Search customers by first and last name to find IBANs",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(

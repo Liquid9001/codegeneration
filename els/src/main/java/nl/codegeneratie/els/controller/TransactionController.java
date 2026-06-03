@@ -32,7 +32,7 @@ public class TransactionController {
     @GetMapping
     @Operation(
             summary = "Get all transactions (employee only)",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -60,7 +60,7 @@ public class TransactionController {
     @GetMapping("/{transactionId}")
     @Operation(
             summary = "Get transaction details",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")}
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -80,7 +80,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionById(transactionId));
     }
     @PostMapping("/transfer")
-    @Operation(summary = "Transfer money between two accounts", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Transfer money between two accounts", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TransactionDTO> transfer(@RequestBody TransactionDTO transactionDTO) {
 
         transactionDTO.setTransactionType("TRANSFER");
@@ -89,7 +89,7 @@ public class TransactionController {
     }
 
     @PostMapping("/deposit")
-    @Operation(summary = "Deposit cash into an ATM (Requires receiverIban)", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Deposit cash into an ATM (Requires receiverIban)", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TransactionDTO> deposit(@RequestBody TransactionDTO transactionDTO) {
         transactionDTO.setTransactionType("DEPOSIT");
         TransactionDTO createdTransaction = transactionService.deposit(transactionDTO);
@@ -97,7 +97,7 @@ public class TransactionController {
     }
 
     @PostMapping("/withdrawal")
-    @Operation(summary = "Withdraw cash from an ATM (Requires senderIban)", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Withdraw cash from an ATM (Requires senderIban)", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TransactionDTO> withdrawal(@RequestBody TransactionDTO transactionDTO) {
         transactionDTO.setTransactionType("WITHDRAWAL");
         TransactionDTO createdTransaction = transactionService.withdrawal(transactionDTO);
