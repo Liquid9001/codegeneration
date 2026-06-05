@@ -1,54 +1,55 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" @click="home">ELS</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <div v-if="isLoggedIn" class="d-flex align-items-center">
-          <button @click="logout" class="btn btn-outline-danger">Logout</button>
-        </div>
-        <div v-else>
-          <router-link to="/login" class="btn btn-primary me-2">Login</router-link>
-          <router-link to="/register" class="btn btn-secondary">Register</router-link>
-        </div>
+  <nav class="navbar">
+    <div class="container-fluid nav-content">
+      <router-link class="navbar-brand" to="/">ELS</router-link>
+      <div class="nav-actions">
+        <router-link to="/atm" class="btn btn-outline-light nav-btn">ATM</router-link>
+
+        <template v-if="isLoggedIn">
+          <router-link to="/" class="btn btn-outline-light nav-btn">Dashboard</router-link>
+          <router-link v-if="isCustomer" to="/transfer" class="btn btn-outline-light nav-btn">Overboeken</router-link>
+          <router-link to="/transactions" class="btn btn-outline-light nav-btn">Transacties</router-link>
+          <router-link v-if="isEmployeeOrAdmin" to="/admin/users" class="btn btn-outline-light nav-btn">Gebruikers</router-link>
+          <button @click="logout" class="btn btn-outline-danger nav-btn">Logout</button>
+        </template>
+
+        <template v-else>
+          <router-link to="/login" class="btn btn-primary nav-btn">Login</router-link>
+          <router-link to="/register" class="btn btn-secondary nav-btn">Register</router-link>
+        </template>
       </div>
     </div>
   </nav>
 </template>
 
 <script>
-import { useAuthStore } from '../store/auth';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../store/auth';
 
 export default {
   setup() {
     const authStore = useAuthStore();
+    const router = useRouter();
     const isLoggedIn = computed(() => authStore.isLoggedIn);
     const currentUser = computed(() => authStore.currentUser);
-    const router = useRouter();
-    const home = () => {
-      router.push('/');
-    };
+    const isEmployeeOrAdmin = computed(() => (
+      currentUser.value?.role === 'EMPLOYEE' || currentUser.value?.role === 'ADMIN'
+    ));
+    const isCustomer = computed(() => currentUser.value?.role === 'CUSTOMER');
+
     const logout = () => {
       authStore.logout();
       router.push('/login');
     };
 
-    const isEmployeeOrAdmin = computed(() => {
-      return currentUser.value && (currentUser.value.role === 'EMPLOYEE' || currentUser.value.role === 'ADMIN');
-    });
-
     return {
       isLoggedIn,
-      currentUser,
-      logout,
       isEmployeeOrAdmin,
-      home
+      isCustomer,
+      logout,
     };
-  }
+  },
 };
 </script>
 
@@ -59,6 +60,14 @@ export default {
   padding: 15px 0;
 }
 
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .navbar-brand {
   font-weight: 700;
   font-size: 24px;
@@ -67,90 +76,66 @@ export default {
   cursor: pointer;
 }
 
-.navbar-toggler {
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 12px;
+.nav-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.navbar-toggler:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+.nav-btn {
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  padding: 9px 16px;
 }
 
 .btn-primary {
   background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
   color: white;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  padding: 10px 20px;
-  margin-left: 10px;
-}
-
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .btn-secondary {
   background: linear-gradient(to right, #ff7e5f 0%, #feb47b 100%);
   color: white;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  padding: 10px 20px;
-  margin-left: 10px;
 }
 
-.btn-secondary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
+.btn-outline-light,
 .btn-outline-danger {
-  background: transparent;
   color: white;
-  border: 2px solid white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  padding: 10px 20px;
-  margin-left: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
 }
 
-.btn-outline-danger:hover {
+.btn-outline-light:hover,
+.btn-outline-danger:hover,
+.router-link-active.btn-outline-light {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  color: white;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
   .navbar {
     padding: 10px 0;
   }
-  
+
   .navbar-brand {
     font-size: 20px;
   }
-  
-  .btn-primary, .btn-secondary, .btn-outline-danger {
-    padding: 8px 15px;
+
+  .nav-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .nav-btn {
+    padding: 8px 12px;
     font-size: 14px;
   }
 }

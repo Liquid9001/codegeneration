@@ -12,7 +12,9 @@
           <input type="password" v-model="password" id="password" class="form-control" required />
         </div>
         <span v-if="errorMessage" class="error">{{ errorMessage }}</span>
-        <button type="submit" class="btn btn-primary">Inloggen</button>
+        <button type="submit" class="btn btn-primary" :disabled="loading">
+          {{ loading ? 'Inloggen...' : 'Inloggen' }}
+        </button>
       </form>
     </div>
   </div>
@@ -20,8 +22,8 @@
 
 <script>
 import { useAuthStore } from '../store/auth';
-import api from '../api';
-import { jwtDecode } from 'jwt-decode';
+import { loginUser } from '../services/authService';
+import { getErrorMessage } from '../services/errorUtils';
 
 export default {
   name: 'Login',
@@ -30,31 +32,23 @@ export default {
       email: '',
       password: '',
       errorMessage: '',
+      loading: false,
     };
   },
   methods: {
     async login() {
       this.errorMessage = '';
+      this.loading = true;
 
       try {
-        const response = await api.post('/users/login', {
-          email: this.email,
-          password: this.password,
-        });
-        const token = response.data.token;
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.userId;
-        const userResponse = await api.get(`/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const user = userResponse.data;
+        const { token, user } = await loginUser(this.email, this.password);
         useAuthStore().login(token, user);
-        this.$router.push('/'); // Voeg een dashboard-pagina toe of verander naar de juiste route
+        this.$router.push('/');
       } catch (error) {
         console.error('Login failed:', error);
-        this.errorMessage = error.response?.data?.error || 'Invalid credentials';
+        this.errorMessage = getErrorMessage(error, 'Invalid credentials');
+      } finally {
+        this.loading = false;
       }
     },
     isAuthorized(role) {

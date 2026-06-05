@@ -2,6 +2,17 @@
   <div class="dashboard">
     <h1 class="dashboard-title">{{ dashboardTitle }}</h1>
     <div v-if="user.accounts && user.accounts.length > 0 && !isAdminOrEmployee" class="accounts-container">
+      <div class="account-summary">
+        <div>
+          <span class="summary-label">Totaal saldo</span>
+          <strong>{{ formatMoney(totalBalance) }}</strong>
+        </div>
+        <div class="dashboard-actions">
+          <router-link to="/transfer" class="btn btn-primary">Overboeken</router-link>
+          <router-link to="/transactions" class="btn btn-primary">Transacties</router-link>
+          <router-link to="/atm" class="btn btn-secondary">ATM</router-link>
+        </div>
+      </div>
       <BankAccount v-for="account in user.accounts" :key="account.id" :account="account" />
     </div>
     <div v-else-if="!isAdminOrEmployee && !user.approved" class="approval-message">
@@ -11,6 +22,7 @@
       <p>Dit is het admin dashboard. Hier kunt u alle gebruikers en rekeningen beheren.</p>
       <router-link to="/admin/users" class="btn btn-primary">Gebruikers beheren</router-link>
       <router-link to="/admin/bankaccounts" class="btn btn-primary">Bankrekeningen beheren</router-link>
+      <router-link to="/transactions" class="btn btn-primary">Transacties bekijken</router-link>
     </div>
   </div>
 </template>
@@ -18,35 +30,37 @@
 <script>
 import { useAuthStore } from '../store/auth';
 import BankAccount from './BankAccount.vue';
+import { formatCurrency } from '../services/errorUtils';
 
 export default {
   name: 'Dashboard',
   components: {
     BankAccount
   },
-  data() {
-    return {
-      user: {}
-    };
-  },
   computed: {
+    authStore() {
+      return useAuthStore();
+    },
+    user() {
+      return this.authStore.currentUser || {};
+    },
     dashboardTitle() {
-      const authStore = useAuthStore();
-      if (authStore.isLoggedIn && (authStore.user.role === 'ADMIN' || authStore.user.role === 'EMPLOYEE')) {
+      if (this.authStore.isLoggedIn && (this.authStore.user.role === 'ADMIN' || this.authStore.user.role === 'EMPLOYEE')) {
         return 'Admin Dashboard';
       }
       return 'Dashboard';
     },
     isAdminOrEmployee() {
-      const authStore = useAuthStore();
-      return authStore.isLoggedIn && (authStore.user.role === 'ADMIN' || authStore.user.role === 'EMPLOYEE');
+      return this.authStore.isLoggedIn && (this.authStore.user.role === 'ADMIN' || this.authStore.user.role === 'EMPLOYEE');
+    },
+    totalBalance() {
+      return (this.user.accounts || []).reduce((total, account) => total + Number(account.balance || 0), 0);
     }
   },
-  async created() {
-    const authStore = useAuthStore();
-    if (authStore.isLoggedIn) {
-      this.user = authStore.user;
-    }
+  methods: {
+    formatMoney(value) {
+      return formatCurrency(value);
+    },
   }
 };
 </script>
@@ -77,6 +91,35 @@ export default {
   gap: 20px;
   width: 100%;
   max-width: 800px;
+}
+
+.account-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.summary-label {
+  display: block;
+  color: #e0e0e0;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.account-summary strong {
+  font-size: 28px;
+}
+
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .approval-message {
@@ -115,6 +158,8 @@ export default {
 
 .admin-content .btn {
   margin-top: 20px;
+  margin-left: 8px;
+  margin-right: 8px;
   padding: 10px 20px;
   background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
   color: white;
@@ -139,6 +184,15 @@ export default {
   
   .dashboard-title {
     font-size: 24px;
+  }
+
+  .account-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-actions {
+    justify-content: flex-start;
   }
 }
 </style>

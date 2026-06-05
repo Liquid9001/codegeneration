@@ -2,13 +2,15 @@
   <div class="bank-account">
     <div class="account-info">
       <h4 class="account-iban">{{ account.iban }}</h4>
-      <p class="account-balance">€ {{ account.balance | currencyFormat }}</p>
+      <p class="account-balance">{{ formatMoney(account.balance) }}</p>
     </div>
     <span :class="accountTypeClass">{{ accountTypeLabel }}</span>
   </div>
 </template>
 
 <script>
+import { formatCurrency } from '../services/errorUtils';
+
 export default {
   name: 'BankAccount',
   props: {
@@ -35,13 +37,10 @@ export default {
       return '';
     }
   },
-  filters: {
-    currencyFormat(value) {
-      if (!value) return '0,00';
-      const parts = value.toString().split('.');
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-      return parts.join(',');
-    }
+  methods: {
+    formatMoney(value) {
+      return formatCurrency(value);
+    },
   }
 };
 </script>

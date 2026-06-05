@@ -16,13 +16,19 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "(:endDate IS NULL OR t.timestamp <= :endDate) AND " +
             "(:minAmount IS NULL OR t.amount >= :minAmount) AND " +
             "(:maxAmount IS NULL OR t.amount <= :maxAmount) AND " +
-            "(:iban IS NULL OR t.senderIban = :iban OR t.receiverIban = :iban)")
+            "(:iban IS NULL OR t.senderIban = :iban OR t.receiverIban = :iban) AND " +
+            "(:transactionType IS NULL OR t.transactionType = :transactionType) AND " +
+            "(:customerId IS NULL OR " +
+            "t.senderAccountId IN (SELECT a.id FROM Account a WHERE a.user.id = :customerId) OR " +
+            "t.receiverAccountId IN (SELECT a.id FROM Account a WHERE a.user.id = :customerId))")
     Page<Transaction> findFilteredTransactions(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("minAmount") BigDecimal minAmount,
             @Param("maxAmount") BigDecimal maxAmount,
             @Param("iban") String iban,
+            @Param("transactionType") String transactionType,
+            @Param("customerId") Long customerId,
             Pageable pageable
     );
 

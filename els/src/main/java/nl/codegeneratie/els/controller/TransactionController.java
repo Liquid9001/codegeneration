@@ -52,9 +52,21 @@ public class TransactionController {
             @RequestParam(name = "end_date", required = false) LocalDateTime endDate,
             @RequestParam(name = "min_amount", required = false) BigDecimal minAmount,
             @RequestParam(name = "max_amount", required = false) BigDecimal maxAmount,
-            @RequestParam(required = false) String iban
+            @RequestParam(required = false) String iban,
+            @RequestParam(name = "transaction_type", required = false) String transactionType,
+            @RequestParam(name = "customer_id", required = false) Long customerId
     ) {
-        return transactionService.getAllTransactions(offset, limit, startDate, endDate, minAmount, maxAmount, iban);
+        return transactionService.getAllTransactions(
+                offset,
+                limit,
+                startDate,
+                endDate,
+                minAmount,
+                maxAmount,
+                iban,
+                transactionType,
+                customerId
+        );
     }
 
     @GetMapping("/{transactionId}")
