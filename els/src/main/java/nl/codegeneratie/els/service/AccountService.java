@@ -30,7 +30,7 @@ public class AccountService {
     public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
-
+    // define custom preauthorize annotation for ownership
     public AccountDTO getAccountById(Long accountId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
         if (!account.isActive()) {
@@ -43,7 +43,7 @@ public class AccountService {
         }
         return convertToDTO(account);
     }
-
+    // use account police method
     public AccountDTO updateAccountTransferLimits(Long accountId, AccountTransferLimitsDTO limitsDTO) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
@@ -67,7 +67,7 @@ public class AccountService {
         account.setActive(false); // soft delete
         accountRepository.save(account);
     }
-
+    // delte no usages
     public List<AccountDTO> getAccountsByUser_Id(Long userId) {
         return accountRepository.findByUser_Id(userId)
                 .stream()
@@ -98,7 +98,7 @@ public class AccountService {
             throw new InvalidTransferLimitsException(dto.getDailyTransferLimit(), dto.getAbsoluteTransferLimit());
         }
     }
-
+    // use a mapper instead for seperation of concerns, in a new mappers class, maybe use map structs (nice to have)
     private AccountDTO convertToDTO(Account account) {
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setFirstName(account.getUser().getFirstName());

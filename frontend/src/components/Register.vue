@@ -44,6 +44,7 @@
 
 <script>
 import api from '../api';
+import { getErrorMessage } from '../services/errorUtils';
 
 export default {
   name: 'Register',
@@ -99,7 +100,7 @@ export default {
         this.$router.push('/login'); // Redirect to login page after successful registration
       } catch (error) {
         console.error('Registratie mislukt:', error);
-        this.errors.global = error.response?.data?.error || 'Registratie mislukt. Probeer het opnieuw.';
+        this.errors.global = getErrorMessage(error, 'Registratie mislukt. Probeer het opnieuw.');
       }
     },
     validateEmail(email) {

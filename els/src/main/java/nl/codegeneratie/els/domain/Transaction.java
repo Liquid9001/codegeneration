@@ -13,14 +13,12 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "from_account_id")
-    private Long fromAccountId;
-    @Column(name = "to_account_id")
-    private Long toAccountId;
-    @Column(name = "initiated_by_user_id")
+    private Long senderAccountId;
+    private Long receiverAccountId;
     private Long initiatedByUserId;
+    private String senderIban;
+    private String receiverIban;
     private BigDecimal amount;
-    @Column(name = "transaction_type")
     private String transactionType;
     private String currency;
     private LocalDateTime timestamp;

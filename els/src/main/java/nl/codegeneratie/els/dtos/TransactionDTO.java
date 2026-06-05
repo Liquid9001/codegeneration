@@ -13,10 +13,10 @@ public class TransactionDTO {
     private Long id;
 
     @Schema(description = "IBAN of the sender account", example = "NL91ABNA0417164300")
-    private String fromIban;
+    private String senderIban;
 
     @Schema(description = "IBAN of the receiver account", example = "NL91ABNA0417164301")
-    private String toIban;
+    private String receiverIban;
 
     @Schema(description = "User who initiated the transaction", example = "1")
     private Long initiatedByUserId;
