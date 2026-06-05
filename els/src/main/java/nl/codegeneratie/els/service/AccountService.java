@@ -9,6 +9,7 @@ import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
+import nl.codegeneratie.els.mappers.AccountMapper;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
@@ -26,9 +27,11 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final Random random = new Random();
     private static final String IBAN_PREFIX = "NL00ELS0";
+    private final AccountMapper accountMapper;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper) {
         this.accountRepository = accountRepository;
+        this.accountMapper = accountMapper;
     }
     // define custom preauthorize annotation for ownership
     public AccountDTO getAccountById(Long accountId) {
@@ -41,7 +44,7 @@ public class AccountService {
         if (!SecurityUtil.isEmployeeOrAdmin() && !ownerId.equals(currentUserId)) {
             throw new ForbiddenException();
         }
-        return convertToDTO(account);
+        return accountMapper.toAccountDTO(account);
     }
     // use account police method
     public AccountDTO updateAccountTransferLimits(Long accountId, AccountTransferLimitsDTO limitsDTO) {
@@ -51,14 +54,14 @@ public class AccountService {
         account.setDailyTransferLimit(limitsDTO.getDailyTransferLimit());
         account.setAbsoluteTransferLimit(limitsDTO.getAbsoluteTransferLimit());
         accountRepository.save(account);
-        return convertToDTO(account);
+        return accountMapper.toAccountDTO(account);
     }
 
     private boolean areTransferLimitsValid(AccountTransferLimitsDTO limitsDTO) {
         BigDecimal dailyTransferLimit = limitsDTO.getDailyTransferLimit();
         BigDecimal absoluteTransferLimit = limitsDTO.getAbsoluteTransferLimit();
         // Daily limit has to be higher than absolute limit, and both need to be higher than zero
-        return dailyTransferLimit.compareTo(absoluteTransferLimit) >= 0 && dailyTransferLimit.compareTo(BigDecimal.ZERO) > 0;
+        return dailyTransferLimit.compareTo(absoluteTransferLimit) >= 0 && dailyTransferLimit.compareTo(BigDecimal.ZERO) > 0 && absoluteTransferLimit.compareTo(BigDecimal.ZERO) > 0;
     }
 
     public void deleteAccount(Long accountId) {
@@ -71,7 +74,7 @@ public class AccountService {
     public List<AccountDTO> getAccountsByUser_Id(Long userId) {
         return accountRepository.findByUser_Id(userId)
                 .stream()
-                .map(this::convertToDTO)
+                .map(accountMapper::toAccountDTO)
                 .collect(Collectors.toList());
     }
 
@@ -97,14 +100,6 @@ public class AccountService {
         if (!areTransferLimitsValid(dto)) {
             throw new InvalidTransferLimitsException(dto.getDailyTransferLimit(), dto.getAbsoluteTransferLimit());
         }
-    }
-    // use a mapper instead for seperation of concerns, in a new mappers class, maybe use map structs (nice to have)
-    private AccountDTO convertToDTO(Account account) {
-        AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setFirstName(account.getUser().getFirstName());
-        accountDTO.setLastName(account.getUser().getLastName());
-        BeanUtils.copyProperties(account, accountDTO);
-        return accountDTO;
     }
 
     private String generateIban() {
