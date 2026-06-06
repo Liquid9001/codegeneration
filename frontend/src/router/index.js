@@ -39,7 +39,8 @@ const routes = [
   {
     path: '/atm',
     name: 'Atm',
-    component: AtmPage
+    component: AtmPage,
+    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
   },
   {
     path: '/transactions',
@@ -83,12 +84,21 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = authStore.ensureValidSession();
 
   if (to.matched.some(record => record.meta.publicOnly) && isAuthenticated) {
-    next({ name: 'Dashboard' });
+    const requestedScope = String(to.query.scope || '').toLowerCase();
+    next(requestedScope === 'atm' && authStore.userRole === 'CUSTOMER'
+      ? { name: 'Atm' }
+      : { name: 'Dashboard' });
     return;
   }
 
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: 'Login' });
+    next({
+      name: 'Login',
+      query: {
+        redirect: to.fullPath,
+        ...(to.name === 'Atm' ? { scope: 'atm' } : {}),
+      },
+    });
     return;
   }
 
