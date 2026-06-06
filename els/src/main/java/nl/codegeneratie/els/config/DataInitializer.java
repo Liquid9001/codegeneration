@@ -166,8 +166,10 @@ public class DataInitializer implements CommandLineRunner {
 
             // Create Transactions
             Transaction transaction1 = new Transaction();
-            transaction1.setSenderAccountId(1L);
-            transaction1.setReceiverAccountId(3L);
+            transaction1.setSenderAccountId(account1.getId());
+            transaction1.setReceiverAccountId(account3.getId());
+            transaction1.setSenderIban(account1.getIban());
+            transaction1.setReceiverIban(account3.getIban());
             transaction1.setInitiatedByUserId(1L);
             transaction1.setAmount(new BigDecimal("250.00"));
             transaction1.setTransactionType("TRANSFER");
@@ -178,8 +180,10 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction1);
 
             Transaction transaction2 = new Transaction();
-            transaction2.setSenderAccountId(3L);
-            transaction2.setReceiverAccountId(1L);
+            transaction2.setSenderAccountId(account3.getId());
+            transaction2.setReceiverAccountId(account1.getId());
+            transaction2.setSenderIban(account3.getIban());
+            transaction2.setReceiverIban(account1.getIban());
             transaction2.setInitiatedByUserId(2L);
             transaction2.setAmount(new BigDecimal("150.50"));
             transaction2.setTransactionType("TRANSFER");
@@ -190,8 +194,10 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction2);
 
             Transaction transaction3 = new Transaction();
-            transaction3.setSenderAccountId(1L);
-            transaction3.setReceiverAccountId(4L);
+            transaction3.setSenderAccountId(account1.getId());
+            transaction3.setReceiverAccountId(account5.getId());
+            transaction3.setSenderIban(account1.getIban());
+            transaction3.setReceiverIban(account5.getIban());
             transaction3.setInitiatedByUserId(1L);
             transaction3.setAmount(new BigDecimal("500.00"));
             transaction3.setTransactionType("TRANSFER");
@@ -202,9 +208,11 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction3);
 
             Transaction transaction4 = new Transaction();
-            transaction4.setSenderAccountId(2L);
-            transaction4.setReceiverAccountId(5L);
-            transaction4.setInitiatedByUserId(1L);
+            transaction4.setSenderAccountId(account2.getId());
+            transaction4.setReceiverAccountId(account1.getId());
+            transaction4.setSenderIban(account2.getIban());
+            transaction4.setReceiverIban(account1.getIban());
+            transaction4.setInitiatedByUserId(account2.getUser().getId());
             transaction4.setAmount(new BigDecimal("1000.00"));
             transaction4.setTransactionType("TRANSFER");
             transaction4.setCurrency("EUR");
@@ -214,8 +222,10 @@ public class DataInitializer implements CommandLineRunner {
             transactionRepository.save(transaction4);
 
             Transaction transaction5 = new Transaction();
-            transaction5.setSenderAccountId(4L);
-            transaction5.setReceiverAccountId(1L);
+            transaction5.setSenderAccountId(account5.getId());
+            transaction5.setReceiverAccountId(account1.getId());
+            transaction5.setSenderIban(account5.getIban());
+            transaction5.setReceiverIban(account1.getIban());
             transaction5.setInitiatedByUserId(3L);
             transaction5.setAmount(new BigDecimal("75.25"));
             transaction5.setTransactionType("TRANSFER");
