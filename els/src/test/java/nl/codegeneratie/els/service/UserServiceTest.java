@@ -13,6 +13,7 @@ import nl.codegeneratie.els.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ class UserServiceTest {
 
     private UserRepository userRepository;
     private UserService userService;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
@@ -36,6 +38,7 @@ class UserServiceTest {
         AccountRepository accountRepository = mock(AccountRepository.class);
         AccountService accountService = mock(AccountService.class);
         AccountMapper accountMapper = mock(AccountMapper.class);
+        passwordEncoder = new BCryptPasswordEncoder();
         JwtService jwtService = new JwtService(
                 "testOnlyJwtSecretKeyForElsMustBeAtLeast32Bytes",
                 3600000
@@ -45,7 +48,8 @@ class UserServiceTest {
                 accountRepository,
                 accountService,
                 jwtService,
-                accountMapper
+                accountMapper,
+                passwordEncoder
         );
     }
 
@@ -69,7 +73,7 @@ class UserServiceTest {
         assertEquals(null, response.getPassword());
         verify(userRepository).save(org.mockito.ArgumentMatchers.argThat(user ->
                 user.getRole() == UserRole.CUSTOMER
-                        && new BCryptPasswordEncoder().matches("password123", user.getPasswordHash())
+                        && passwordEncoder.matches("password123", user.getPasswordHash())
         ));
     }
 
@@ -131,7 +135,7 @@ class UserServiceTest {
         User user = new User();
         user.setId(1L);
         user.setEmail("existing.customer@example.com");
-        user.setPasswordHash(new BCryptPasswordEncoder().encode("password123"));
+        user.setPasswordHash(passwordEncoder.encode("password123"));
         user.setRole(UserRole.CUSTOMER);
         user.setApproved(true);
         return user;

@@ -65,10 +65,10 @@ class UserControllerTest {
                 .thenThrow(new UserRegistrationException("Email is already in use"));
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRegistrationJson("CUSTOMER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validRegistrationJson("CUSTOMER")))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Email is already in use")));
+                .andExpect(jsonPath("$.message", is("Email is already in use")));
     }
 
     @Test
@@ -77,10 +77,10 @@ class UserControllerTest {
                 .thenThrow(new UserRegistrationException("BSN is already in use"));
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRegistrationJson("CUSTOMER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validRegistrationJson("CUSTOMER")))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("BSN is already in use")));
+                .andExpect(jsonPath("$.message", is("BSN is already in use")));
     }
 
     @Test
@@ -117,7 +117,7 @@ class UserControllerTest {
                                 }
                                 """))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error", is("Invalid credentials")));
+                .andExpect(jsonPath("$.message", is("Invalid credentials")));
     }
 
     @Test
