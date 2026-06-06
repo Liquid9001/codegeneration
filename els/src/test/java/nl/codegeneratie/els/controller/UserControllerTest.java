@@ -65,10 +65,10 @@ class UserControllerTest {
                 .thenThrow(new UserRegistrationException("Email is already in use"));
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRegistrationJson("CUSTOMER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validRegistrationJson("CUSTOMER")))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Email is already in use")));
+                .andExpect(jsonPath("$.message", is("Email is already in use")));
     }
 
     @Test
@@ -77,10 +77,10 @@ class UserControllerTest {
                 .thenThrow(new UserRegistrationException("BSN is already in use"));
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRegistrationJson("CUSTOMER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validRegistrationJson("CUSTOMER")))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("BSN is already in use")));
+                .andExpect(jsonPath("$.message", is("BSN is already in use")));
     }
 
     @Test
@@ -104,6 +104,26 @@ class UserControllerTest {
     }
 
     @Test
+    void createUserCannotCreateEmployeeRoleThroughResponse() throws Exception {
+        UserDTO response = new UserDTO();
+        response.setId(10L);
+        response.setEmail("new.customer@example.com");
+        response.setFirstName("New");
+        response.setLastName("Customer");
+        response.setPhoneNumber(612345678);
+        response.setBsn(123456789);
+        response.setRole(UserRole.CUSTOMER);
+
+        when(userService.createUser(any(UserDTO.class))).thenReturn(response);
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRegistrationJson("EMPLOYEE")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role", is("CUSTOMER")));
+    }
+
+    @Test
     void loginWithInvalidCredentialsReturnsUnauthorized() throws Exception {
         when(userService.login(eq("customer@example.com"), eq("wrong")))
                 .thenThrow(new InvalidCredentialsException());
@@ -117,7 +137,7 @@ class UserControllerTest {
                                 }
                                 """))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error", is("Invalid credentials")));
+                .andExpect(jsonPath("$.message", is("Invalid credentials")));
     }
 
     @Test

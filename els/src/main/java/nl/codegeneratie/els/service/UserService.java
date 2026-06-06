@@ -14,7 +14,7 @@ import nl.codegeneratie.els.repository.UserRepository;
 import nl.codegeneratie.els.security.JwtService;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,8 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final AccountService accountService;
-    // use dependency injection with bean instead of making a new bcrypt...
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AccountMapper accountMapper;
 
@@ -39,13 +38,15 @@ public class UserService {
             AccountRepository accountRepository,
             AccountService accountService,
             JwtService jwtService,
-            AccountMapper accountMapper
+            AccountMapper accountMapper,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.accountService = accountService;
         this.jwtService = jwtService;
         this.accountMapper = accountMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserWithAccountsDTO> getAllUsers(Integer offset, Integer limit) {
