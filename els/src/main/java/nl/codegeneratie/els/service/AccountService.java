@@ -1,10 +1,12 @@
 package nl.codegeneratie.els.service;
 
+import jakarta.persistence.criteria.Predicate;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.dtos.AccountDTO;
+import nl.codegeneratie.els.dtos.BankAccount.BankAccountFilterRequest;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
@@ -12,10 +14,14 @@ import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -127,6 +133,51 @@ public class AccountService {
         account.setActive(true);
         account.setCreatedAt(LocalDateTime.now());
         return account;
+    }
+    private static Specification<Account> getBankAccountSpecification(BankAccountFilterRequest filters) {
+        // If no transactionDirection is specified, include both incoming and outgoing transactions
+        return Specification.where((root, query, cb) -> {
+            List<Predicate> preds = new ArrayList<>();
+            if (filters.getDateFrom() != null) {
+                preds.add(cb.greaterThanOrEqualTo(
+                        root.get("createdAt"), filters.getDateFrom().atStartOfDay()));
+            }
+
+            if (filters.getDateTo() != null) {
+                preds.add(cb.lessThanOrEqualTo(
+                        root.get("createdAt"), filters.getDateTo().atTime(23, 59, 59)));
+            }
+
+            if (filters.getAccountType() != null) {
+                preds.add(cb.equal(root.get("accountType"), filters.getAccountType().name()));
+            }
+
+            if (filters.getMinAmount() != null) {
+                preds.add(cb.greaterThanOrEqualTo(
+                        root.get("balance"), filters.getMinAmount()));
+            }
+
+            if (filters.getMaxAmount() != null) {
+                preds.add(cb.lessThanOrEqualTo(
+                        root.get("balance"), filters.getMaxAmount()));
+            }
+
+            if (filters.getIban() != null) {
+                preds.add(cb.like(
+                        cb.lower(root.get("iban")),
+                        "%" + filters.getIban().toLowerCase() + "%"
+                ));
+            }
+
+            return cb.and(preds.toArray(new Predicate[0]));
+        });
+    }
+
+    public List<Account> getAllAccountsByFilter(BankAccountFilterRequest filters) {
+        Pageable pageable = PageRequest.of(filters.getOffset(), 50, filters.getSortDirection(), "createdAt");
+        Specification<Account> specification = getBankAccountSpecification(filters);
+
+        return accountRepository.findAll(specification, pageable).getContent();
     }
 }
 
