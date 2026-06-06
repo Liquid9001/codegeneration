@@ -1,16 +1,23 @@
 package nl.codegeneratie.els.transaction;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.TransactionDTO;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.TransactionRepository;
 import nl.codegeneratie.els.service.TransactionService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest
@@ -26,6 +33,22 @@ abstract class AbstractTransactionIntegrationTest {
 
     @Autowired
     protected TransactionRepository transactionRepository;
+
+    @BeforeEach
+    void authenticateAsEmployee() {
+        Claims claims = Jwts.claims();
+        claims.put("userId", 1L);
+        claims.put("role", "EMPLOYEE");
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(claims, null, List.of())
+        );
+    }
+
+    @AfterEach
+    void clearAuthentication() {
+        SecurityContextHolder.clearContext();
+    }
 
     protected Account createAccount(String balance, String absoluteLimit, String dailyLimit) {
         Account account = new Account();

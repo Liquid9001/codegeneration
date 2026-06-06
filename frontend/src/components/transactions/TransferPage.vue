@@ -72,7 +72,26 @@
                 Overboeken naar een andere klant kan alleen vanaf uw betaalrekening. Zoek op naam of vul de IBAN handmatig in.
               </div>
 
-              <IbanSearch @selected="selectExternalIban" />
+              <IbanSearch
+                :selected-iban="receiverIban"
+                @selected="selectExternalIban"
+                @search-start="clearExternalRecipient"
+              />
+
+              <div v-if="selectedRecipient" class="selected-recipient-card text-left mt-3">
+                <div>
+                  <span class="selected-label">Geselecteerde ontvanger</span>
+                  <strong>{{ selectedRecipient.firstName }} {{ selectedRecipient.lastName }}</strong>
+                  <span class="d-block text-monospace">{{ selectedRecipient.iban }}</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="loading" @click="clearExternalRecipient">
+                  Wijzigen
+                </button>
+              </div>
+
+              <div v-else-if="receiverIban" class="alert alert-secondary py-2 text-left mt-3 mb-0">
+                Handmatig ingevoerde ontvangende IBAN: <span class="text-monospace">{{ receiverIban }}</span>
+              </div>
 
               <div class="form-group text-left mt-3">
                 <label for="receiver-iban" class="font-weight-bold">Ontvangende IBAN</label>
@@ -153,6 +172,7 @@ export default {
       transferType: 'own',
       senderIban: '',
       receiverIban: '',
+      selectedRecipient: null,
       senderAccount: null,
       amount: '',
       description: '',
@@ -185,6 +205,7 @@ export default {
   watch: {
     transferType() {
       this.receiverIban = '';
+      this.selectedRecipient = null;
       this.ensureValidSender();
     },
     senderIban() {
@@ -192,6 +213,12 @@ export default {
 
       if (this.receiverIban === this.senderIban) {
         this.receiverIban = '';
+        this.selectedRecipient = null;
+      }
+    },
+    receiverIban(newValue) {
+      if (this.selectedRecipient && this.selectedRecipient.iban !== newValue) {
+        this.selectedRecipient = null;
       }
     },
     accounts() {
@@ -212,6 +239,12 @@ export default {
     },
     selectExternalIban(result) {
       this.receiverIban = result.iban;
+      this.selectedRecipient = result;
+      this.errorMessage = '';
+    },
+    clearExternalRecipient() {
+      this.receiverIban = '';
+      this.selectedRecipient = null;
     },
     validateTransfer() {
       if (!this.senderIban) {
@@ -270,6 +303,7 @@ export default {
         await this.refreshCurrentUser();
         this.amount = '';
         this.description = '';
+        this.clearExternalRecipient();
         this.successMessage = `Overboeking verwerkt. Transactie #${response.data.id}.`;
       } catch (error) {
         this.errorMessage = getErrorMessage(error, 'Overboeking is mislukt.');
@@ -303,5 +337,32 @@ export default {
   padding: 16px;
   margin-bottom: 16px;
   background: #f8f9fa;
+}
+
+.selected-recipient-card {
+  align-items: center;
+  background: #e8f5e9;
+  border: 1px solid #b7dfbf;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.selected-label {
+  color: #2e7d32;
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .selected-recipient-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 </style>

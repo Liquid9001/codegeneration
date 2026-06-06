@@ -59,7 +59,7 @@
             label="Rekening"
             empty-label="Selecteer een rekening"
             required
-            :disabled="actionLoading"
+            :disabled="isActionLoading"
           />
 
           <div v-if="selectedAccount" class="account-summary text-left mb-4">
@@ -87,11 +87,11 @@
                       step="0.01"
                       class="form-control"
                       required
-                      :disabled="actionLoading"
+                      :disabled="isActionLoading"
                     />
                   </div>
                 </div>
-                <button type="submit" class="btn btn-success btn-block" :disabled="actionLoading">
+                <button type="submit" class="btn btn-success btn-block" :disabled="isActionLoading">
                   {{ actionLoading === 'deposit' ? 'Storting verwerken...' : 'Storten' }}
                 </button>
               </form>
@@ -115,11 +115,11 @@
                       step="0.01"
                       class="form-control"
                       required
-                      :disabled="actionLoading"
+                      :disabled="isActionLoading"
                     />
                   </div>
                 </div>
-                <button type="submit" class="btn btn-danger btn-block" :disabled="actionLoading">
+                <button type="submit" class="btn btn-danger btn-block" :disabled="isActionLoading">
                   {{ actionLoading === 'withdrawal' ? 'Opname verwerken...' : 'Opnemen' }}
                 </button>
               </form>
@@ -174,6 +174,9 @@ export default {
     },
     selectedAccount() {
       return this.accounts.find((account) => account.iban === this.selectedIban) || null;
+    },
+    isActionLoading() {
+      return Boolean(this.actionLoading);
     },
   },
   watch: {
