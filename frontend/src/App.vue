@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Navbar />
+    <Navbar v-if="$route.name !== 'Atm'" />
     <router-view></router-view>
   </div>
 </template>
