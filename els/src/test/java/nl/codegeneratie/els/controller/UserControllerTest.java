@@ -104,6 +104,26 @@ class UserControllerTest {
     }
 
     @Test
+    void createUserCannotCreateEmployeeRoleThroughResponse() throws Exception {
+        UserDTO response = new UserDTO();
+        response.setId(10L);
+        response.setEmail("new.customer@example.com");
+        response.setFirstName("New");
+        response.setLastName("Customer");
+        response.setPhoneNumber(612345678);
+        response.setBsn(123456789);
+        response.setRole(UserRole.CUSTOMER);
+
+        when(userService.createUser(any(UserDTO.class))).thenReturn(response);
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRegistrationJson("EMPLOYEE")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role", is("CUSTOMER")));
+    }
+
+    @Test
     void loginWithInvalidCredentialsReturnsUnauthorized() throws Exception {
         when(userService.login(eq("customer@example.com"), eq("wrong")))
                 .thenThrow(new InvalidCredentialsException());
