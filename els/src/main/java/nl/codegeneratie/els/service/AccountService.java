@@ -36,17 +36,13 @@ public class AccountService {
         this.accountMapper = accountMapper;
         this.accountPolicy = accountPolicy;
     }
-    // define custom preauthorize annotation for ownership
+
     public AccountDTO getAccountById(Long accountId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
         accountPolicy.enforceAccountMustBeActive(account);
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-        Long ownerId = account.getUser().getId();
-        if (!SecurityUtil.isEmployeeOrAdmin() && !ownerId.equals(currentUserId)) {
-            throw new ForbiddenException();
-        }
         return accountMapper.toAccountDTO(account);
     }
+
     public AccountDTO updateAccountTransferLimits(Long accountId, AccountTransferLimitsDTO limitsDTO) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));

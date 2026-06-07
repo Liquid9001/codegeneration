@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import nl.codegeneratie.els.annotations.AccountOwnerEmployeeOnly;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.service.AccountService;
@@ -45,6 +46,7 @@ public class AccountController {
                     description = "Account not found"
             )
     })
+    @AccountOwnerEmployeeOnly
     public ResponseEntity<AccountDTO> getAccountById(@PathVariable Long accountId) {
         return ResponseEntity.ok(accountService.getAccountById(accountId));
     }
