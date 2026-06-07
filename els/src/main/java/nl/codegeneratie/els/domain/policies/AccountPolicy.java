@@ -16,9 +16,8 @@ public class AccountPolicy {
     private boolean areTransferLimitsValid(AccountTransferLimitsDTO limitsDTO) {
         BigDecimal dailyTransferLimit = limitsDTO.getDailyTransferLimit();
         BigDecimal absoluteTransferLimit = limitsDTO.getAbsoluteTransferLimit();
-        // Daily limit has to be higher than absolute limit, and both need to be higher than zero
-        return dailyTransferLimit.compareTo(absoluteTransferLimit) >= 0
-                && dailyTransferLimit.compareTo(BigDecimal.ZERO) > 0
+        // Both limits need to be higher than zero
+        return  dailyTransferLimit.compareTo(BigDecimal.ZERO) > 0
                 && absoluteTransferLimit.compareTo(BigDecimal.ZERO) > 0;
     }
 
