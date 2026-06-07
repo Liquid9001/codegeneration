@@ -1,8 +1,10 @@
 package nl.codegeneratie.els.domain.policies;
 
 import nl.codegeneratie.els.domain.Account;
+import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
+import nl.codegeneratie.els.exceptions.AccountsAlreadyExistException;
 import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,12 @@ public class AccountPolicy {
         if (!account.isActive()) {
             throw new AccountNotFoundException(account.getId());
             // for security reasons, inactive (soft-deleted) accounts return "not found" instead of "inactive account" exception
+        }
+    }
+
+    public void enforceNoDuplicateDefaultAccounts(User user) {
+        if (!user.getAccounts().isEmpty()) {
+            throw new AccountsAlreadyExistException(user);
         }
     }
 }

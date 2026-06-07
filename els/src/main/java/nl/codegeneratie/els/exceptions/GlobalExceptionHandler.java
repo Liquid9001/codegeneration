@@ -84,6 +84,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.FORBIDDEN, "You are not allowed to access this resource.");
     }
 
+    @ExceptionHandler(InvalidTransferLimitsException.class)
+    public ResponseEntity<ApiError> handleInvalidTransferLimits(InvalidTransferLimitsException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid transfer limits. Daily limit must be greater than 0 and Absolute limit.");
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralExceptions(Exception ex) {
         LOGGER.error("Unhandled exception", ex);

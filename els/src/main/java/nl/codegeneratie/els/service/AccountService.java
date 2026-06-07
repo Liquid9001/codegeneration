@@ -64,13 +64,12 @@ public class AccountService {
                                               AccountTransferLimitsDTO savingsAccountLimitsDTO) {
         accountPolicy.enforceTransferLimitsMustBeValid(checkingAccountLimitsDTO);
         accountPolicy.enforceTransferLimitsMustBeValid(savingsAccountLimitsDTO);
-        List<Account> existing = accountRepository.findByUser(user);
-        if (existing.isEmpty()) { // don't make two accounts if the user already has the default accounts
-            Account checkingAccount = buildDefaultAccount(user, checkingAccountLimitsDTO, AccountType.CHECKING);
-            Account savingsAccount = buildDefaultAccount(user, savingsAccountLimitsDTO, AccountType.SAVINGS);
-            accountRepository.save(checkingAccount);
-            accountRepository.save(savingsAccount);
-        }
+        // don't make two accounts if the user already has the default accounts
+        accountPolicy.enforceNoDuplicateDefaultAccounts(user);
+        Account checkingAccount = buildDefaultAccount(user, checkingAccountLimitsDTO, AccountType.CHECKING);
+        Account savingsAccount = buildDefaultAccount(user, savingsAccountLimitsDTO, AccountType.SAVINGS);
+        accountRepository.save(checkingAccount);
+        accountRepository.save(savingsAccount);
     }
 
     private String generateIban() {
