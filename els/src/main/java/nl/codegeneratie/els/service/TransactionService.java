@@ -2,14 +2,14 @@ package nl.codegeneratie.els.service;
 
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.Transaction;
-import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.TransactionDTO;
-import nl.codegeneratie.els.exceptions.ForbiddenException;
+import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.TransactionNotFoundException;
+import nl.codegeneratie.els.mappers.TransactionMapper;
+import nl.codegeneratie.els.policy.transaction.TransactionPolicy;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.TransactionRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
-import nl.codegeneratie.els.service.helpers.TransactionHelper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,13 +28,15 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
-    private final TransactionHelper transactionHelper;
+    private final TransactionPolicy transactionPolicy;
+    private final TransactionMapper transactionMapper;
     private static final String ATM_IBAN = "NL99BANK0000000ATM1";
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionHelper transactionHelper) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, TransactionPolicy transactionPolicy, TransactionMapper transactionMapper) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
-        this.transactionHelper = transactionHelper;
+        this.transactionPolicy = transactionPolicy;
+        this.transactionMapper = transactionMapper;
     }
 
     public List<TransactionDTO> getAllTransactions(
@@ -52,33 +54,33 @@ public class TransactionService {
         int pageNumber = (offset != null && offset >= 0) ? (offset / pageSize) : 0;
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending());
-        Long effectiveCustomerId = getEffectiveCustomerId(customerId);
+        Long effectiveCustomerId = transactionPolicy.getEffectiveCustomerId(customerId);
 
         Page<Transaction> transactionPage = transactionRepository.findFilteredTransactions(
                 startDate, endDate, minAmount, maxAmount, iban, normalize(transactionType), effectiveCustomerId, pageable
         );
 
         return transactionPage.getContent().stream()
-                .map(transactionHelper::convertToDTO)
+                .map(transactionMapper::toTransactionDTO)
                 .collect(Collectors.toList());
     }
 
     public TransactionDTO getTransactionById(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new TransactionNotFoundException(transactionId));
-        validateTransactionAccess(transaction);
-        return transactionHelper.convertToDTO(transaction);
+        transactionPolicy.enforceCanViewTransaction(transaction);
+        return transactionMapper.toTransactionDTO(transaction);
     }
 
     @Transactional
     public TransactionDTO transfer(TransactionDTO dto) {
-        validateAmount(dto);
+        transactionPolicy.enforceValidAmount(dto.getAmount());
         applyCurrentUserInitiator(dto);
-        Account sender = transactionHelper.getAccountByIban(dto.getSenderIban(), "Source");
-        Account receiver = transactionHelper.getAccountByIban(dto.getReceiverIban(), "Destination");
-        validateCustomerTransferAccess(sender, receiver);
+        Account sender = getAccountByIban(dto.getSenderIban(), "Source");
+        Account receiver = getAccountByIban(dto.getReceiverIban(), "Destination");
+        transactionPolicy.enforceCanTransfer(sender, receiver);
 
-        transactionHelper.validateTransferLimits(sender, dto.getAmount());
+        transactionPolicy.enforceTransferLimits(sender, dto.getAmount());
 
         sender.setBalance(sender.getBalance().subtract(dto.getAmount()));
         receiver.setBalance(receiver.getBalance().add(dto.getAmount()));
@@ -86,16 +88,16 @@ public class TransactionService {
         accountRepository.save(sender);
         accountRepository.save(receiver);
 
-        return transactionHelper.createAndSaveTransactionRecord(dto, sender, receiver);
+        return saveTransactionRecord(dto, sender, receiver);
     }
 
     @Transactional
     public TransactionDTO deposit(TransactionDTO dto) {
-        validateAmount(dto);
+        transactionPolicy.enforceValidAmount(dto.getAmount());
         applyCurrentUserInitiator(dto);
-        Account receiver = transactionHelper.getAccountByIban(dto.getReceiverIban(), "Destination");
-        Account atm = transactionHelper.getAccountByIban(ATM_IBAN, "ATM System");
-        validateCustomerAccountAccess(receiver);
+        Account receiver = getAccountByIban(dto.getReceiverIban(), "Destination");
+        Account atm = getAccountByIban(ATM_IBAN, "ATM System");
+        transactionPolicy.enforceCanUseAccount(receiver);
 
         receiver.setBalance(receiver.getBalance().add(dto.getAmount()));
         atm.setBalance(atm.getBalance().add(dto.getAmount()));
@@ -103,22 +105,19 @@ public class TransactionService {
         accountRepository.save(receiver);
         accountRepository.save(atm);
 
-        return transactionHelper.createAndSaveTransactionRecord(dto, null, receiver);
+        return saveTransactionRecord(dto, null, receiver);
     }
 
     @Transactional
     public TransactionDTO withdrawal(TransactionDTO dto) {
-        validateAmount(dto);
+        transactionPolicy.enforceValidAmount(dto.getAmount());
         applyCurrentUserInitiator(dto);
-        Account sender = transactionHelper.getAccountByIban(dto.getSenderIban(), "Source");
-        Account atm = transactionHelper.getAccountByIban(ATM_IBAN, "ATM System");
-        validateCustomerAccountAccess(sender);
+        Account sender = getAccountByIban(dto.getSenderIban(), "Source");
+        Account atm = getAccountByIban(ATM_IBAN, "ATM System");
+        transactionPolicy.enforceCanUseAccount(sender);
 
-        transactionHelper.validateTransferLimits(sender, dto.getAmount());
-
-        if (atm.getBalance().compareTo(dto.getAmount()) < 0) {
-            throw new IllegalArgumentException("The ATM does not have enough physical cash to process this withdrawal.");
-        }
+        transactionPolicy.enforceTransferLimits(sender, dto.getAmount());
+        transactionPolicy.enforceAtmHasEnoughCash(atm, dto.getAmount());
 
         sender.setBalance(sender.getBalance().subtract(dto.getAmount()));
         atm.setBalance(atm.getBalance().subtract(dto.getAmount()));
@@ -126,87 +125,21 @@ public class TransactionService {
         accountRepository.save(sender);
         accountRepository.save(atm);
 
-        return transactionHelper.createAndSaveTransactionRecord(dto, sender, null);
+        return saveTransactionRecord(dto, sender, null);
     }
 
-    private Long getEffectiveCustomerId(Long requestedCustomerId) {
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
-        if (currentUserId == null) {
-            return requestedCustomerId;
-        }
-
-        if (SecurityUtil.isEmployeeOrAdmin()) {
-            return requestedCustomerId;
-        }
-
-        return currentUserId;
+    private TransactionDTO saveTransactionRecord(TransactionDTO dto, Account sender, Account receiver) {
+        Transaction transaction = transactionMapper.toTransaction(dto, sender, receiver);
+        return transactionMapper.toTransactionDTO(transactionRepository.save(transaction));
     }
 
-    private void validateTransactionAccess(Transaction transaction) {
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
-        if (currentUserId == null || SecurityUtil.isEmployeeOrAdmin()) {
-            return;
+    private Account getAccountByIban(String iban, String type) {
+        if (iban == null || iban.trim().isEmpty()) {
+            throw new IllegalArgumentException(type + " IBAN is required for this transaction type.");
         }
 
-        if (!transactionBelongsToUser(transaction, currentUserId)) {
-            throw new ForbiddenException();
-        }
-    }
-
-    private boolean transactionBelongsToUser(Transaction transaction, Long userId) {
-        return accountBelongsToUser(transaction.getSenderAccountId(), userId)
-                || accountBelongsToUser(transaction.getReceiverAccountId(), userId);
-    }
-
-    private void validateCustomerTransferAccess(Account sender, Account receiver) {
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
-        if (currentUserId == null || SecurityUtil.isEmployeeOrAdmin()) {
-            return;
-        }
-
-        if (!accountBelongsToUser(sender, currentUserId)) {
-            throw new ForbiddenException();
-        }
-
-        if (accountBelongsToUser(receiver, currentUserId)) {
-            return;
-        }
-
-        if (sender.getAccountType() != AccountType.CHECKING || receiver.getAccountType() != AccountType.CHECKING) {
-            throw new IllegalArgumentException("Transfers to another customer must be from a checking account to a checking account.");
-        }
-    }
-
-    private void validateCustomerAccountAccess(Account account) {
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
-        if (currentUserId == null || SecurityUtil.isEmployeeOrAdmin()) {
-            return;
-        }
-
-        if (!accountBelongsToUser(account, currentUserId)) {
-            throw new ForbiddenException();
-        }
-    }
-
-    private boolean accountBelongsToUser(Account account, Long userId) {
-        return account != null
-                && account.getUser() != null
-                && account.getUser().getId() != null
-                && account.getUser().getId().equals(userId);
-    }
-
-    private boolean accountBelongsToUser(Long accountId, Long userId) {
-        return accountId != null && accountRepository.existsByIdAndUser_Id(accountId, userId);
-    }
-
-    private void validateAmount(TransactionDTO dto) {
-        if (dto.getAmount() == null || dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Transaction amount must be greater than zero.");
-        }
+        return accountRepository.findByIban(iban)
+                .orElseThrow(() -> new AccountNotFoundException(type + " account not found for IBAN: " + iban));
     }
 
     private void applyCurrentUserInitiator(TransactionDTO dto) {
@@ -224,4 +157,3 @@ public class TransactionService {
         return value == null || value.isBlank() ? null : value.trim().toUpperCase();
     }
 }
-

@@ -2,6 +2,28 @@
   <div class="login-container">
     <div class="login-wrapper">
       <h2 class="login-title">Welkom terug</h2>
+      <ul class="nav nav-tabs scope-tabs">
+        <li class="nav-item">
+          <button
+            type="button"
+            class="nav-link"
+            :class="{ active: selectedScope === AuthenticationScope.BANK }"
+            @click="selectScope(AuthenticationScope.BANK)"
+          >
+            Bank
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            type="button"
+            class="nav-link"
+            :class="{ active: selectedScope === AuthenticationScope.ATM }"
+            @click="selectScope(AuthenticationScope.ATM)"
+          >
+            ATM
+          </button>
+        </li>
+      </ul>
       <form @submit.prevent="login" class="login-form">
         <div class="form-group">
           <label for="email" class="form-label">Emailadres</label>
@@ -13,7 +35,7 @@
         </div>
         <span v-if="errorMessage" class="error">{{ errorMessage }}</span>
         <button type="submit" class="btn btn-primary" :disabled="loading">
-          {{ loading ? 'Inloggen...' : 'Inloggen' }}
+          {{ loading ? 'Inloggen...' : loginButtonLabel }}
         </button>
       </form>
     </div>
@@ -25,25 +47,78 @@ import { useAuthStore } from '../store/auth';
 import { loginUser } from '../services/authService';
 import { getErrorMessage } from '../services/errorUtils';
 
+const AuthenticationScope = Object.freeze({
+  BANK: 'BANK',
+  ATM: 'ATM',
+});
+
 export default {
   name: 'Login',
   data() {
     return {
+      AuthenticationScope,
+      selectedScope: AuthenticationScope.BANK,
       email: '',
       password: '',
       errorMessage: '',
       loading: false,
     };
   },
+  computed: {
+    loginButtonLabel() {
+      return this.selectedScope === AuthenticationScope.ATM
+        ? 'Inloggen bij ATM'
+        : 'Inloggen';
+    },
+  },
+  watch: {
+    '$route.query.scope': {
+      immediate: true,
+      handler() {
+        this.applyScopeFromRoute();
+      },
+    },
+  },
   methods: {
+    applyScopeFromRoute() {
+      this.selectedScope = String(this.$route.query.scope || '').toLowerCase() === 'atm'
+        ? AuthenticationScope.ATM
+        : AuthenticationScope.BANK;
+    },
+    selectScope(scope) {
+      this.selectedScope = scope;
+      this.errorMessage = '';
+    },
+    safeRedirectPath() {
+      const redirect = this.$route.query.redirect;
+
+      if (typeof redirect !== 'string' || !redirect.startsWith('/') || redirect.startsWith('//')) {
+        return '';
+      }
+
+      return redirect;
+    },
     async login() {
       this.errorMessage = '';
       this.loading = true;
 
       try {
         const { token, user } = await loginUser(this.email, this.password);
+
+        if (this.selectedScope === AuthenticationScope.ATM && user.role !== 'CUSTOMER') {
+          this.errorMessage = 'De ATM is alleen beschikbaar voor klanten.';
+          return;
+        }
+
         useAuthStore().login(token, user);
-        this.$router.push('/');
+
+        if (this.selectedScope === AuthenticationScope.ATM) {
+          this.$router.push('/atm');
+          return;
+        }
+
+        const redirectPath = this.safeRedirectPath();
+        this.$router.push(redirectPath && redirectPath !== '/atm' ? redirectPath : '/');
       } catch (error) {
         console.error('Login failed:', error);
         this.errorMessage = getErrorMessage(error, 'Invalid credentials');
@@ -53,7 +128,7 @@ export default {
     },
     isAuthorized(role) {
       return role === 'ADMIN' || role === 'EMPLOYEE';
-    }
+    },
   },
 };
 </script>
@@ -95,6 +170,31 @@ export default {
   padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   width: 100%;
+}
+
+.scope-tabs {
+  width: 100%;
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+.scope-tabs .nav-item {
+  flex: 1;
+}
+
+.scope-tabs .nav-link {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  font-weight: 600;
+}
+
+.scope-tabs .nav-link.active {
+  color: #2d3748;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .form-group {

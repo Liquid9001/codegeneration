@@ -48,12 +48,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="result in results" :key="`${result.customerId}-${result.iban}`">
+          <tr
+            v-for="result in results"
+            :key="`${result.customerId}-${result.iban}`"
+            :class="{ 'table-primary': selectedIban === result.iban }"
+          >
             <td>{{ result.firstName }} {{ result.lastName }}</td>
             <td class="text-monospace">{{ result.iban }}</td>
             <td class="text-right">
               <button type="button" class="btn btn-sm btn-primary" @click="$emit('selected', result)">
-                Selecteer
+                {{ selectedIban === result.iban ? 'Geselecteerd' : 'Selecteer' }}
               </button>
             </td>
           </tr>
@@ -69,7 +73,13 @@ import { getErrorMessage } from '../../services/errorUtils';
 
 export default {
   name: 'IbanSearch',
-  emits: ['selected'],
+  props: {
+    selectedIban: {
+      type: String,
+      default: '',
+    },
+  },
+  emits: ['selected', 'search-start'],
   data() {
     return {
       firstName: '',
@@ -91,6 +101,7 @@ export default {
         return;
       }
 
+      this.$emit('search-start');
       this.loading = true;
 
       try {

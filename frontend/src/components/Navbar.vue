@@ -3,8 +3,6 @@
     <div class="container-fluid nav-content">
       <router-link class="navbar-brand" to="/">ELS</router-link>
       <div class="nav-actions">
-        <router-link to="/atm" class="btn btn-outline-light nav-btn">ATM</router-link>
-
         <template v-if="isLoggedIn">
           <router-link to="/" class="btn btn-outline-light nav-btn">Dashboard</router-link>
           <router-link v-if="isCustomer" to="/transfer" class="btn btn-outline-light nav-btn">Overboeken</router-link>
