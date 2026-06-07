@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccountMapper {
     public AccountDTO toAccountDTO(Account account) {
-        AccountDTO dto = new AccountDTO();
-        BeanUtils.copyProperties(account, dto);
-        return dto;
+        AccountDTO accountDTO = new AccountDTO();
+        accountDTO.setFirstName(account.getUser().getFirstName());
+        accountDTO.setLastName(account.getUser().getLastName());
+        BeanUtils.copyProperties(account, accountDTO);
+        return accountDTO;
     }
 }

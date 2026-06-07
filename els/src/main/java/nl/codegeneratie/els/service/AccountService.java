@@ -3,12 +3,14 @@ package nl.codegeneratie.els.service;
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.AccountType;
+import nl.codegeneratie.els.domain.policies.AccountPolicy;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.IbanNotFoundException;
 import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
+import nl.codegeneratie.els.mappers.AccountMapper;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
@@ -26,39 +28,29 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final Random random = new Random();
     private static final String IBAN_PREFIX = "NL00ELS0";
+    private final AccountMapper accountMapper;
+    private final AccountPolicy accountPolicy;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AccountPolicy accountPolicy) {
         this.accountRepository = accountRepository;
+        this.accountMapper = accountMapper;
+        this.accountPolicy = accountPolicy;
     }
-    // define custom preauthorize annotation for ownership
+
     public AccountDTO getAccountById(Long accountId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
-        if (!account.isActive()) {
-            throw new AccountNotFoundException(accountId);
-        }
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-        Long ownerId = account.getUser().getId();
-        if (!SecurityUtil.isEmployeeOrAdmin() && !ownerId.equals(currentUserId)) {
-            throw new ForbiddenException();
-        }
-        return convertToDTO(account);
+        accountPolicy.enforceAccountMustBeActive(account);
+        return accountMapper.toAccountDTO(account);
     }
-    // use account police method
+
     public AccountDTO updateAccountTransferLimits(Long accountId, AccountTransferLimitsDTO limitsDTO) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
-        validateLimits(limitsDTO);
+        accountPolicy.enforceTransferLimitsMustBeValid(limitsDTO);
         account.setDailyTransferLimit(limitsDTO.getDailyTransferLimit());
         account.setAbsoluteTransferLimit(limitsDTO.getAbsoluteTransferLimit());
         accountRepository.save(account);
-        return convertToDTO(account);
-    }
-
-    private boolean areTransferLimitsValid(AccountTransferLimitsDTO limitsDTO) {
-        BigDecimal dailyTransferLimit = limitsDTO.getDailyTransferLimit();
-        BigDecimal absoluteTransferLimit = limitsDTO.getAbsoluteTransferLimit();
-        // Daily limit has to be higher than absolute limit, and both need to be higher than zero
-        return dailyTransferLimit.compareTo(absoluteTransferLimit) >= 0 && dailyTransferLimit.compareTo(BigDecimal.ZERO) > 0;
+        return accountMapper.toAccountDTO(account);
     }
 
     public void deleteAccount(Long accountId) {
@@ -67,44 +59,17 @@ public class AccountService {
         account.setActive(false); // soft delete
         accountRepository.save(account);
     }
-    // delte no usages
-    public List<AccountDTO> getAccountsByUser_Id(Long userId) {
-        return accountRepository.findByUser_Id(userId)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public Account findByIbanOrThrow(String iban) {
-        return accountRepository.findByIban(iban)
-                .orElseThrow(() -> new IbanNotFoundException(iban));
-    }
 
     public void createDefaultAccountsIfNeeded(User user, AccountTransferLimitsDTO checkingAccountLimitsDTO,
                                               AccountTransferLimitsDTO savingsAccountLimitsDTO) {
-        validateLimits(checkingAccountLimitsDTO);
-        validateLimits(savingsAccountLimitsDTO);
-        List<Account> existing = accountRepository.findByUser(user);
-        if (existing.isEmpty()) {
-            Account checkingAccount = buildDefaultAccount(user, checkingAccountLimitsDTO, AccountType.CHECKING);
-            Account savingsAccount = buildDefaultAccount(user, savingsAccountLimitsDTO, AccountType.SAVINGS);
-            accountRepository.save(checkingAccount);
-            accountRepository.save(savingsAccount);
-        }
-    }
-
-    private void validateLimits(AccountTransferLimitsDTO dto) {
-        if (!areTransferLimitsValid(dto)) {
-            throw new InvalidTransferLimitsException(dto.getDailyTransferLimit(), dto.getAbsoluteTransferLimit());
-        }
-    }
-    // use a mapper instead for seperation of concerns, in a new mappers class, maybe use map structs (nice to have)
-    private AccountDTO convertToDTO(Account account) {
-        AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setFirstName(account.getUser().getFirstName());
-        accountDTO.setLastName(account.getUser().getLastName());
-        BeanUtils.copyProperties(account, accountDTO);
-        return accountDTO;
+        accountPolicy.enforceTransferLimitsMustBeValid(checkingAccountLimitsDTO);
+        accountPolicy.enforceTransferLimitsMustBeValid(savingsAccountLimitsDTO);
+        // don't make two accounts if the user already has the default accounts
+        accountPolicy.enforceNoDuplicateDefaultAccounts(user);
+        Account checkingAccount = buildDefaultAccount(user, checkingAccountLimitsDTO, AccountType.CHECKING);
+        Account savingsAccount = buildDefaultAccount(user, savingsAccountLimitsDTO, AccountType.SAVINGS);
+        accountRepository.save(checkingAccount);
+        accountRepository.save(savingsAccount);
     }
 
     private String generateIban() {
