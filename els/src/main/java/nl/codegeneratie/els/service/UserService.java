@@ -2,6 +2,7 @@ package nl.codegeneratie.els.service;
 
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
+import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.domain.enums.UserRole;
 import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
@@ -122,7 +123,10 @@ public class UserService {
         List<User> users = userRepository.findByFirstAndLastName(firstName, lastName);
         List<CustomerSearchDTO> results = new ArrayList<>();
         for (User user : users) {
-            List<Account> accounts = accountRepository.findByUser_Id(user.getId());
+            List<Account> accounts = accountRepository.findByUserAndAccountTypeAndActiveTrue(
+                    user,
+                    AccountType.CHECKING
+            );
             for (Account account : accounts) {
                 results.add(new CustomerSearchDTO(user.getId(), user.getFirstName(), user.getLastName(), account.getIban()));
             }
