@@ -89,6 +89,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid transfer limits. Daily limit must be greater than 0 and Absolute limit.");
     }
 
+    @ExceptionHandler(AccountsAlreadyExistException.class)
+    public ResponseEntity<ApiError> handleDefaultAccountsAlreadyExist(AccountsAlreadyExistException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "User already has default accounts.");
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralExceptions(Exception ex) {
         LOGGER.error("Unhandled exception", ex);
