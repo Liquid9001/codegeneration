@@ -1,6 +1,8 @@
 package nl.codegeneratie.els.repository;
 
 import nl.codegeneratie.els.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByEmail(String email);
 	boolean existsByEmail(String email);
 	boolean existsByBsn(Integer bsn);
+	Page<User> findAll(Pageable pageable);
+	Page<User> findByApproved(boolean approved, Pageable pageable);
 
 	@Query("select u from User u where u.firstName = :firstName and u.lastName = :lastName")
 	List<User> findByFirstAndLastName(

@@ -10,6 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -146,6 +149,29 @@ public class UserController {
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<UserWithAccountsDTO> approveUser(@PathVariable Long userId, @Valid @RequestBody UserTransferLimitsDTO userTransferLimitsDTO) {
         return ResponseEntity.ok(userService.approveUser(userId, userTransferLimitsDTO));
+    }
+
+    @GetMapping("/paginated")
+    @Operation(
+            summary = "Get all users with their accounts (paginated)",
+            description = "Retrieve all users including their accounts (secured)",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of users with accounts",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserWithAccountsDTO.class)
+                    )
+            )
+    })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<Page<UserWithAccountsDTO>> getAllUsersPaginated(
+            @RequestParam(required = false) Boolean approved,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllUsersPaginated(approved, pageable));
     }
 }
 
