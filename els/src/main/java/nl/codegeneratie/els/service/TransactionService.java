@@ -11,17 +11,13 @@ import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.repository.TransactionRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
@@ -39,30 +35,21 @@ public class TransactionService {
         this.transactionMapper = transactionMapper;
     }
 
-    public List<TransactionDTO> getAllTransactions(
-            Integer offset,
-            Integer limit,
+    public Page<TransactionDTO> getAllTransactions(
             LocalDateTime startDate,
             LocalDateTime endDate,
             BigDecimal minAmount,
             BigDecimal maxAmount,
             String iban,
             String transactionType,
-            Long customerId
-    ) {//look at request data, return page object, cleaner way to handle pagination data
-        int pageSize = (limit != null && limit > 0) ? limit : 50;
-        int pageNumber = (offset != null && offset >= 0) ? (offset / pageSize) : 0;
-
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending());
+            Long customerId,
+            Pageable pageable
+    ) {
         Long effectiveCustomerId = transactionPolicy.getEffectiveCustomerId(customerId);
 
-        Page<Transaction> transactionPage = transactionRepository.findFilteredTransactions(
+        return transactionRepository.findFilteredTransactions(
                 startDate, endDate, minAmount, maxAmount, iban, normalize(transactionType), effectiveCustomerId, pageable
-        );
-
-        return transactionPage.getContent().stream()
-                .map(transactionMapper::toTransactionDTO)
-                .collect(Collectors.toList());
+        ).map(transactionMapper::toTransactionDTO);
     }
 
     public TransactionDTO getTransactionById(Long transactionId) {

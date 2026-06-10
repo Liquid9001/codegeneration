@@ -218,8 +218,8 @@ public class DataInitializer implements CommandLineRunner {
             transaction4.setTransactionType("TRANSFER");
             transaction4.setCurrency("EUR");
             transaction4.setTimestamp(LocalDateTime.parse("2024-01-23 09:45:00", formatter));
-            transaction4.setStatus("PENDING");
-            transaction4.setDescription("Large transfer pending approval");
+            transaction4.setStatus("COMPLETED");
+            transaction4.setDescription("Transfer from savings to checking");
             transactionRepository.save(transaction4);
 
             Transaction transaction5 = new Transaction();

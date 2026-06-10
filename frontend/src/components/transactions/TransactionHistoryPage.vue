@@ -114,7 +114,9 @@
             </div>
 
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3">
-              <span class="text-muted mb-2 mb-md-0">Pagina {{ page }}</span>
+              <span class="text-muted mb-2 mb-md-0">
+                Pagina {{ page }}{{ totalPages ? ` van ${totalPages}` : '' }} - {{ totalElements }} resultaten
+              </span>
               <div>
                 <button type="button" class="btn btn-outline-secondary mr-2" :disabled="loading || page === 1" @click="previousPage">
                   Vorige
@@ -188,6 +190,8 @@ export default {
       transactions: [],
       page: 1,
       pageSize: 10,
+      totalPages: 0,
+      totalElements: 0,
       loading: false,
       usersLoading: false,
       errorMessage: '',
@@ -220,10 +224,7 @@ export default {
       return this.currentUser.accounts || [];
     },
     hasNextPage() {
-      return this.transactions.length === this.pageSize;
-    },
-    offset() {
-      return (this.page - 1) * this.pageSize;
+      return this.page < this.totalPages;
     },
   },
   watch: {
@@ -251,8 +252,8 @@ export default {
     },
     buildParams() {
       const params = {
-        offset: this.offset,
-        limit: this.pageSize,
+        page: Math.max(this.page - 1, 0),
+        size: this.pageSize,
         ...this.filters,
       };
 
@@ -284,9 +285,16 @@ export default {
 
       try {
         const response = await getTransactions(this.buildParams());
-        this.transactions = response.data || [];
+        const pageData = response.data || {};
+
+        this.transactions = pageData.content || [];
+        this.totalPages = pageData.totalPages || 0;
+        this.totalElements = pageData.totalElements || 0;
+        this.page = (pageData.number ?? Math.max(this.page - 1, 0)) + 1;
       } catch (error) {
         this.transactions = [];
+        this.totalPages = 0;
+        this.totalElements = 0;
         this.errorMessage = getErrorMessage(error, 'Transacties ophalen is mislukt.');
       } finally {
         this.loading = false;
