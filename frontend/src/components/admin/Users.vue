@@ -2,35 +2,45 @@
   <div class="users-container">
     <h2>Niet-goedgekeurde Gebruikers</h2>
     <button @click="goToDashboard" class="btn btn-primary">Terug naar Dashboard</button>
+
     <div class="pagination-controls">
-      <button @click="previousPage" :disabled="offset === 0" class="btn btn-secondary">Vorige</button>
-      <span>Pagina {{ currentPage }} van {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="offset + limit >= totalUsers" class="btn btn-secondary">Volgende</button>
+      <button @click="previousPage" :disabled="currentPage === 0" class="btn btn-secondary">
+        Vorige
+      </button>
+
+      <span>Pagina {{ currentPage + 1 }} van {{ totalPages }}</span>
+
+      <button @click="nextPage" :disabled="currentPage + 1 >= totalPages" class="btn btn-secondary">
+        Volgende
+      </button>
     </div>
+
     <table class="table table-striped">
       <thead>
-        <tr>
-          <th>Voornaam</th>
-          <th>Achternaam</th>
-          <th>Email</th>
-          <th>BSN</th>
-          <th>Telefoonnummer</th>
-          <th>Aangemaakt op</th>
-          <th>Acties</th>
-        </tr>
+      <tr>
+        <th>Voornaam</th>
+        <th>Achternaam</th>
+        <th>Email</th>
+        <th>BSN</th>
+        <th>Telefoonnummer</th>
+        <th>Aangemaakt op</th>
+        <th>Acties</th>
+      </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id">
-          <td>{{ user.firstName }}</td>
-          <td>{{ user.lastName }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.bsn }}</td>
-          <td>{{ user.phoneNumber }}</td>
-          <td>{{ formatDate(user.createdAt) }}</td>
-          <td>
-            <button @click="approveUser(user.id)" class="btn btn-success">Goedkeuren</button>
-          </td>
-        </tr>
+      <tr v-for="user in users" :key="user.id">
+        <td>{{ user.firstName }}</td>
+        <td>{{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.bsn }}</td>
+        <td>{{ user.phoneNumber }}</td>
+        <td>{{ formatDate(user.createdAt) }}</td>
+        <td>
+          <button @click="approveUser(user.id)" class="btn btn-success">
+            Goedkeuren
+          </button>
+        </td>
+      </tr>
       </tbody>
     </table>
   </div>
@@ -45,50 +55,68 @@ export default {
     return {
       users: [],
       totalUsers: 0,
-      offset: 0,
-      limit: 10,
-      currentPage: 1
+      totalPages: 1,
+      currentPage: 0,
+      limit: 10
     };
   },
+
   async mounted() {
     await this.fetchUsers();
   },
+
   methods: {
     async fetchUsers() {
       try {
-        const response = await api.get(`/users?offset=${this.offset}&limit=${this.limit}`);
-        
-        // Filter users that are not approved
-        this.users = response.data.filter(user => !user.approved);
-        this.totalUsers = this.users.length;
-        this.totalPages = Math.ceil(this.totalUsers / this.limit);
+        const response = await api.get('/users/paginated', {
+          params: {
+            approved: false,
+            page: this.currentPage,
+            size: this.limit
+          }
+        });
+
+        this.users = response.data.content;
+        this.totalUsers = response.data.totalElements;
+        this.totalPages = response.data.totalPages;
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     },
+
     previousPage() {
-      if (this.offset > 0) {
-        this.offset -= this.limit;
+      if (this.currentPage > 0) {
         this.currentPage--;
         this.fetchUsers();
       }
     },
+
     nextPage() {
-      if (this.offset + this.limit < this.totalUsers) {
-        this.offset += this.limit;
+      if (this.currentPage + 1 < this.totalPages) {
         this.currentPage++;
         this.fetchUsers();
       }
     },
+
     formatDate(dateString) {
-      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      };
+
       return new Date(dateString).toLocaleDateString('nl-NL', options);
     },
+
     goToDashboard() {
       this.$router.push('/');
     },
+
     approveUser(userId) {
-      this.$router.push({ name: 'ApproveUser', params: { id: userId } });
+      this.$router.push({
+        name: 'ApproveUser',
+        params: { id: userId }
+      });
     }
   }
 };
@@ -114,7 +142,7 @@ export default {
 
 .btn-primary {
   position: absolute;
-  top: 100px; /* Aangepast om niet te overlappen met de navbar */
+  top: 100px;
   right: 10px;
   padding: 8px 16px;
   border: none;

@@ -4,7 +4,7 @@
     <button @click="goToDashboard" class="btn btn-primary">Terug naar Dashboard</button>
     <div class="pagination-controls">
       <button @click="previousPage" :disabled="offset === 0" class="btn btn-secondary">Vorige</button>
-      <span>Pagina {{ currentPage }} van {{ totalPages }}</span>
+      <span>Pagina {{ currentPage+1 }} van {{ totalPages }}</span>
       <button @click="nextPage" :disabled="offset + limit >= totalAccounts" class="btn btn-secondary">Volgende</button>
     </div>
     <table class="table table-striped">
@@ -44,9 +44,9 @@ export default {
     return {
       accounts: [],
       totalAccounts: 0,
-      offset: 0,
       limit: 10,
-      currentPage: 1
+      currentPage: 0,
+      totalPages: 1
     };
   },
   async mounted() {
@@ -57,46 +57,62 @@ export default {
       try {
         const apiUrl = import.meta.env.VITE_API_URL;
         const token = useAuthStore().token;
-        const response = await axios.get(`${apiUrl}/users?offset=${this.offset}&limit=${this.limit}`, {
+
+        const response = await axios.get(`${apiUrl}/users/paginated`, {
+          params: {
+            approved: true,
+            page: this.currentPage,
+            size: this.limit
+          },
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
-        // Combine all accounts from users
-        this.accounts = response.data.reduce((acc, user) => {
-          return acc.concat(user.accounts.map(account => ({ ...account, user })));
+        // Flatten all accounts from approved users
+        this.accounts = response.data.content.reduce((acc, user) => {
+          if (user.accounts && user.accounts.length > 0) {
+            return acc.concat(user.accounts.map(account => ({ ...account, user })));
+          }
+          return acc;
         }, []);
-        this.totalAccounts = this.accounts.length;
-        this.totalPages = Math.ceil(this.totalAccounts / this.limit);
+
+        // Set totalAccounts and totalPages based on backend pagination
+        this.totalAccounts = response.data.totalElements;
+        this.totalPages = response.data.totalPages;
+
       } catch (error) {
         console.error('Error fetching accounts:', error);
       }
     },
+
     previousPage() {
-      if (this.offset > 0) {
-        this.offset -= this.limit;
+      if (this.currentPage > 0) {
         this.currentPage--;
         this.fetchAccounts();
       }
     },
+
     nextPage() {
-      if (this.offset + this.limit < this.totalAccounts) {
-        this.offset += this.limit;
+      if (this.currentPage + 1 < this.totalPages) {
         this.currentPage++;
         this.fetchAccounts();
       }
     },
+
     goToDashboard() {
       this.$router.push('/');
     },
+
     goToAccountDetails(accountId) {
       this.$router.push(`/admin/accounts/${accountId}`);
     }
   },
   computed: {
     displayedAccounts() {
-      return this.accounts.slice(this.offset, this.offset + this.limit);
+      const start = 0;
+      const end = this.limit;
+      return this.accounts.slice(start, end);
     }
   }
 };

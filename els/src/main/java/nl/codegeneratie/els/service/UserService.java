@@ -15,6 +15,8 @@ import nl.codegeneratie.els.repository.UserRepository;
 import nl.codegeneratie.els.security.JwtService;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -117,6 +119,11 @@ public class UserService {
         userRepository.save(user);
         accountService.createDefaultAccountsIfNeeded(user, userApprovalDTO.getCheckingAccount(), userApprovalDTO.getSavingsAccount());
         return convertToUserWithAccountsDTO(user);
+    }
+
+    public Page<UserWithAccountsDTO> getAllUsersPaginated(Boolean approved, Pageable pageable) {
+        Page<User> users = approved == null ? userRepository.findAll(pageable) : userRepository.findByApproved(approved, pageable);
+        return users.map(this::convertToUserWithAccountsDTO);
     }
 
     public List<CustomerSearchDTO> searchCustomers(String firstName, String lastName) {
