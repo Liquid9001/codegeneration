@@ -91,7 +91,7 @@ public class AccountController {
                     description = "Account not found"
             )
     })
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long accountId) {
         accountService.deleteAccount(accountId);
         return ResponseEntity.noContent().build();
