@@ -2,11 +2,11 @@ package nl.codegeneratie.els.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
+import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.domain.enums.UserRole;
-import nl.codegeneratie.els.dtos.TokenResponseDTO;
-import nl.codegeneratie.els.dtos.UserDTO;
-import nl.codegeneratie.els.dtos.UserWithAccountsDTO;
+import nl.codegeneratie.els.dtos.*;
 import nl.codegeneratie.els.exceptions.ForbiddenException;
 import nl.codegeneratie.els.exceptions.InvalidCredentialsException;
 import nl.codegeneratie.els.exceptions.UserNotFoundException;
@@ -18,6 +18,7 @@ import nl.codegeneratie.els.security.JwtService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -236,6 +237,100 @@ class UserServiceTest {
         when(userRepository.findById(404L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(404L));
+    }
+
+    @Test
+    void approveUserApprovesUserAndCreatesDefaultAccounts() {
+        User user = existingUser();
+        user.setApproved(false);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        UserTransferLimitsDTO approvalDTO = new UserTransferLimitsDTO();
+        approvalDTO.setCheckingAccount(new AccountTransferLimitsDTO());
+        approvalDTO.setSavingsAccount(new AccountTransferLimitsDTO());
+        UserWithAccountsDTO result = userService.approveUser(user.getId(), approvalDTO);
+        assertTrue(user.isApproved());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void approveUserThrowsWhenUserNotFound() {
+        when(userRepository.findById(42L)).thenReturn(Optional.empty());
+        UserTransferLimitsDTO approvalDTO = new UserTransferLimitsDTO();
+        approvalDTO.setCheckingAccount(new AccountTransferLimitsDTO());
+        approvalDTO.setSavingsAccount(new AccountTransferLimitsDTO());
+        assertThrows(UserNotFoundException.class, () -> userService.approveUser(42L, approvalDTO));
+    }
+
+    @Test
+    void getAllUsersPaginatedReturnsUsersCorrectly() {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        User user = existingUser();
+        org.springframework.data.domain.Page<User> page = new org.springframework.data.domain.PageImpl<>(List.of(user));
+        when(userRepository.findAll(pageable)).thenReturn(page);
+        when(accountRepository.findByUser_IdAndActiveTrue(user.getId())).thenReturn(List.of());
+        var result = userService.getAllUsersPaginated(null, pageable);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(user.getId(), result.getContent().get(0).getId());
+    }
+
+    @Test
+    void getAllUsersPaginatedWithApprovedFilter() {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        User user = existingUser();
+        org.springframework.data.domain.Page<User> page = new org.springframework.data.domain.PageImpl<>(List.of(user));
+        when(userRepository.findByApproved(true, pageable)).thenReturn(page);
+        when(accountRepository.findByUser_IdAndActiveTrue(user.getId())).thenReturn(List.of());
+
+        var result = userService.getAllUsersPaginated(true, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(user.getId(), result.getContent().get(0).getId());
+    }
+
+    @Test
+    void approveUserApprovesUserAndCreatesAccounts() {
+        User user = existingUser();
+        user.setApproved(false);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        AccountService accountServiceMock = mock(AccountService.class);
+        JwtService jwtService = new JwtService(
+                "testOnlyJwtSecretKeyForElsMustBeAtLeast32Bytes",
+                3600000);
+        userService = new UserService(
+                userRepository,
+                accountRepository,
+                accountServiceMock,
+                jwtService,
+                mock(AccountMapper.class),
+                passwordEncoder);
+        UserTransferLimitsDTO limitsDTO = new UserTransferLimitsDTO();
+        limitsDTO.setCheckingAccount(new AccountTransferLimitsDTO());
+        limitsDTO.setSavingsAccount(new AccountTransferLimitsDTO());
+        UserWithAccountsDTO result = userService.approveUser(user.getId(), limitsDTO);
+        assertTrue(user.isApproved());
+        assertEquals(user.getId(), result.getId());
+        verify(userRepository).save(user);
+        verify(accountServiceMock).createDefaultAccountsIfNeeded(user,limitsDTO.getCheckingAccount(),limitsDTO.getSavingsAccount());
+    }
+
+    @Test
+    void searchCustomersReturnsMatchingAccounts() {
+        User user = existingUser();
+        user.setId(10L);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        when(userRepository.findByFirstAndLastName("John", "Doe")).thenReturn(List.of(user));
+        Account account = new Account();
+        account.setIban("NL01ELS0000000001");
+        account.setAccountType(AccountType.CHECKING);
+        account.setActive(true);
+        when(accountRepository.findByUserAndAccountTypeAndActiveTrue(user, AccountType.CHECKING))
+                .thenReturn(List.of(account));
+        var results = userService.searchCustomers("John", "Doe");
+        assertEquals(1, results.size());
+        assertEquals("John", results.get(0).getFirstName());
+        assertEquals("Doe", results.get(0).getLastName());
+        assertEquals("NL01ELS0000000001", results.get(0).getIban());
     }
 
     private UserDTO validRegistrationRequest() {

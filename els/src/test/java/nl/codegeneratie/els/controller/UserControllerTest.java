@@ -9,11 +9,15 @@ import nl.codegeneratie.els.exceptions.UserRegistrationException;
 import nl.codegeneratie.els.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -170,4 +174,36 @@ class UserControllerTest {
                 }
                 """.formatted(role);
     }
+
+    @Test
+    void approveUserReturnsApprovedUser() throws Exception {
+        var approvedUser = new nl.codegeneratie.els.dtos.UserWithAccountsDTO();
+        approvedUser.setId(1L);
+        approvedUser.setEmail("customer@example.com");
+        approvedUser.setFirstName("John");
+        approvedUser.setLastName("Doe");
+        approvedUser.setApproved(true);
+        when(userService.approveUser(eq(1L), any(nl.codegeneratie.els.dtos.UserTransferLimitsDTO.class)))
+                .thenReturn(approvedUser);
+        mockMvc.perform(post("/users/1/approve")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "checkingAccount": {
+                                "dailyTransferLimit": 5000,
+                                "absoluteTransferLimit": 10000
+                              },
+                              "savingsAccount": {
+                                "dailyTransferLimit": 2000,
+                                "absoluteTransferLimit": 5000
+                              }
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.approved", is(true)))
+                .andExpect(jsonPath("$.email", is("customer@example.com")))
+                .andExpect(jsonPath("$.firstName", is("John")))
+                .andExpect(jsonPath("$.lastName", is("Doe")));
+    }
+
 }
