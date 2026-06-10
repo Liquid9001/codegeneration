@@ -1,4 +1,4 @@
-package nl.codegeneratie.els.service;
+package nl.codegeneratie.els.domain.policies;
 
 import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
@@ -6,7 +6,6 @@ import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.AccountsAlreadyExistException;
 import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
-import nl.codegeneratie.els.domain.policies.AccountPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
