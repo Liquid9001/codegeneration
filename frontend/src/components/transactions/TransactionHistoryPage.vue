@@ -169,7 +169,7 @@
 
 <script>
 import { useAuthStore } from '../../store/auth';
-import { getUsers } from '../../services/customerService';
+import { getUsersPage } from '../../services/customerService';
 import { getTransactionById, getTransactions } from '../../services/transactionService';
 import { formatCurrency, formatDateTime, getErrorMessage } from '../../services/errorUtils';
 import AccountSelector from './AccountSelector.vue';
@@ -271,8 +271,12 @@ export default {
       this.usersLoading = true;
 
       try {
-        const response = await getUsers();
-        this.users = response.data || [];
+        const response = await getUsersPage({
+          approved: true,
+          page: 0,
+          size: 1000,
+        });
+        this.users = response.data?.content || [];
       } catch (error) {
         this.errorMessage = getErrorMessage(error, 'Gebruikers ophalen is mislukt.');
       } finally {

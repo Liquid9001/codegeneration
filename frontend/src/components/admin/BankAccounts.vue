@@ -58,7 +58,7 @@ export default {
         const apiUrl = import.meta.env.VITE_API_URL;
         const token = useAuthStore().token;
 
-        const response = await axios.get(`${apiUrl}/users/paginated`, {
+        const response = await axios.get(`${apiUrl}/users`, {
           params: {
             approved: true,
             page: this.currentPage,

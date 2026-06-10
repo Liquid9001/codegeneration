@@ -68,7 +68,7 @@ export default {
   methods: {
     async fetchUsers() {
       try {
-        const response = await api.get('/users/paginated', {
+        const response = await api.get('/users', {
           params: {
             approved: false,
             page: this.currentPage,

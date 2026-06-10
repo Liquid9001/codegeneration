@@ -52,20 +52,6 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<UserWithAccountsDTO> getAllUsers(Integer offset, Integer limit) {
-        List<User> users = userRepository.findAll();
-        int safeOffset = offset == null ? 0 : Math.max(offset, 0);
-        int safeLimit = limit == null ? users.size() : Math.max(limit, 1);
-        int end = Math.min(safeOffset + safeLimit, users.size());
-        if (safeOffset >= users.size()) {
-            return List.of();
-        }
-        return users.subList(safeOffset, end)
-                .stream()
-                .map(this::convertToUserWithAccountsDTO)
-                .collect(Collectors.toList());
-    }
-
     public UserDTO createUser(UserDTO userDTO) {
         validateRegistration(userDTO);
         if (userRepository.existsByEmail(userDTO.getEmail())) {

@@ -7,4 +7,4 @@ export const searchCustomers = (firstName, lastName) => api.get('/customers/sear
   },
 });
 
-export const getUsers = (params = {}) => api.get('/users', { params });
+export const getUsersPage = (params = {}) => api.get('/users', { params });
