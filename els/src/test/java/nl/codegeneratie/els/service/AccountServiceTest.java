@@ -6,6 +6,7 @@ import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
+import nl.codegeneratie.els.exceptions.AccountsAlreadyExistException;
 import nl.codegeneratie.els.exceptions.InvalidTransferLimitsException;
 import nl.codegeneratie.els.mappers.AccountMapper;
 import nl.codegeneratie.els.domain.policies.AccountPolicy;
@@ -17,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +42,8 @@ class AccountServiceTest {
     private Account account;
     private AccountDTO accountDTO;
     private AccountTransferLimitsDTO limitsDTO;
+    private AccountTransferLimitsDTO checkingDto;
+    private AccountTransferLimitsDTO savingsDto;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +61,14 @@ class AccountServiceTest {
         limitsDTO = new AccountTransferLimitsDTO();
         limitsDTO.setDailyTransferLimit(BigDecimal.valueOf(5000));
         limitsDTO.setAbsoluteTransferLimit(BigDecimal.valueOf(10000));
+
+        checkingDto = new AccountTransferLimitsDTO();
+        checkingDto.setDailyTransferLimit(BigDecimal.valueOf(5000));
+        checkingDto.setAbsoluteTransferLimit(BigDecimal.valueOf(1000));
+
+        savingsDto = new AccountTransferLimitsDTO();
+        savingsDto.setDailyTransferLimit(BigDecimal.valueOf(10000));
+        savingsDto.setAbsoluteTransferLimit(BigDecimal.valueOf(5000));
     }
 
     @Test
@@ -91,6 +104,25 @@ class AccountServiceTest {
         assertNotNull(result);
         verify(accountPolicy).enforceTransferLimitsMustBeValid(limitsDTO);
         verify(accountRepository).save(account);
+    }
+
+    @Test
+    void createDefaultAccountsThrowsWhenAccountsAlreadyExist() {
+        User user = new User();
+        user.setAccounts(List.of(new Account()));
+        doThrow(new AccountsAlreadyExistException(user)).when(accountPolicy).enforceNoDuplicateDefaultAccounts(user);
+        assertThrows(AccountsAlreadyExistException.class, () ->
+                accountService.createDefaultAccountsIfNeeded(user, checkingDto, savingsDto));
+        verify(accountPolicy).enforceNoDuplicateDefaultAccounts(user);
+        verify(accountRepository, never()).save(any(Account.class));
+    }
+
+    @Test
+    void createDefaultAccountsCreatesCheckingAndSavings() {
+        User user = new User();
+        user.setAccounts(new ArrayList<>());
+        accountService.createDefaultAccountsIfNeeded(user, checkingDto, savingsDto);
+        verify(accountRepository, times(2)).save(any(Account.class));
     }
 
     @Test
