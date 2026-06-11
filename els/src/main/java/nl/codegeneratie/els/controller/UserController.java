@@ -18,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/users")
 @Tag(name = "Users", description = "User registration, login, approval, and user details")
@@ -29,30 +27,6 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
-    }
-
-    @GetMapping
-    @Operation(
-            summary = "Get all users with their accounts",
-            description = "Retrieve all users including their accounts (secured)",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "List of users with accounts",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserWithAccountsDTO.class)
-                    )
-            )
-    })
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
-    public List<UserWithAccountsDTO> getAllUsers(
-            @RequestParam(required = false) Integer offset,
-            @RequestParam(required = false) Integer limit
-    ) {
-        return userService.getAllUsers(offset, limit);
     }
 
     @PostMapping
@@ -151,7 +125,7 @@ public class UserController {
         return ResponseEntity.ok(userService.approveUser(userId, userTransferLimitsDTO));
     }
 
-    @GetMapping("/paginated")
+    @GetMapping
     @Operation(
             summary = "Get all users with their accounts (paginated)",
             description = "Retrieve all users including their accounts (secured)",
