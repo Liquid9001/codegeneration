@@ -3,10 +3,7 @@
     <h2>Bankrekening Details</h2>
     <button @click="goToBack" class="btn btn-primary">Terug naar Bankrekeningen</button>
     <div v-if="loading" class="spinner-border text-primary" role="status">
-    </div>
-    <div v-else-if="error" class="alert alert-danger">
-      {{ error }}
-    </div>
+    </div>    
     <div v-else>
       <table class="table table-striped">
         <tbody>
@@ -36,6 +33,9 @@
           </tr>
         </tbody>
       </table>
+      <div v-if="error" class="alert alert-danger">
+        {{ error }}
+      </div>
       <button @click="updateTransferLimits" class="btn btn-success">Overboekingslimieten bijwerken</button>
       <button @click="deleteAccount" class="btn btn-danger">Bankrekening verwijderen</button>
     </div>
@@ -77,7 +77,7 @@ export default {
         this.absoluteTransferLimit = this.account.absoluteTransferLimit;
       } catch (error) {
         console.error('Error fetching account details:', error);
-        this.error = 'Er is een fout opgetreden bij het ophalen van de bankrekeningdetails.';
+        this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het ophalen van de bankrekeningdetails.';
       } finally {
         this.loading = false;
       }
@@ -100,7 +100,7 @@ export default {
         this.goToBack();
       } catch (error) {
         console.error('Error updating transfer limits:', error);
-        this.error = 'Er is een fout opgetreden bij het bijwerken van de overboekingslimieten.';
+        this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het bijwerken van de overboekingslimieten.';
       }
     },
     async deleteAccount() {
@@ -117,7 +117,7 @@ export default {
         this.$router.push('/admin/bankaccounts');
       } catch (error) {
         console.error('Error deleting account:', error);
-        this.error = 'Er is een fout opgetreden bij het verwijderen van de bankrekening.';
+        this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het verwijderen van de bankrekening.';
       }
     },
     goToBack() {

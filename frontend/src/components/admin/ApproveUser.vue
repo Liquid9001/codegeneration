@@ -18,6 +18,7 @@
         <label for="savingsAccountDailyLimit">Dagelijkse betaallimiet Spaarrekening:</label>
         <input type="text" id="savingsAccountDailyLimit" v-model="savingsAccount.dailyTransferLimit" required />
       </div>
+      <div v-if="errorMessage" class="alert-error">{{ errorMessage }}</div>
       <div class="horizontal-buttons">
         <button @click="goBack" class="btn btn-secondary">Annuleren</button>
         <button type="submit" class="btn btn-success">Goedkeuren</button>
@@ -41,12 +42,14 @@ export default {
       savingsAccount: {
         absoluteTransferLimit: '',
         dailyTransferLimit: ''
-      }
+      },
+      errorMessage: null
     };
   },
   methods: {
     async approveUser() {
       try {        
+        this.errorMessage = null;
         const apiUrl = import.meta.env.VITE_API_URL
         const token = useAuthStore().token;
         const userId = this.$route.params.id;
@@ -62,6 +65,7 @@ export default {
         this.$router.push({ name: 'AdminUsers' });
       } catch (error) {
         console.error('Error approving user:', error);
+        this.errorMessage = error.response?.data?.message || 'Er is een onverwachte fout opgetreden.';
       }
     },
     goBack() {
@@ -82,6 +86,16 @@ export default {
   color: white;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+.alert-error {
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  width: 100%;
+  text-align: center;
+}
+
 .horizontal-buttons {
   display: flex;
   gap: 10px;
