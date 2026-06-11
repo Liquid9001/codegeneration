@@ -86,7 +86,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidTransferLimitsException.class)
     public ResponseEntity<ApiError> handleInvalidTransferLimits(InvalidTransferLimitsException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid transfer limits. Daily limit must be greater than 0 and Absolute limit.");
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid transfer limits. Limits must be greater than 0.");
     }
 
     @ExceptionHandler(AccountsAlreadyExistException.class)
