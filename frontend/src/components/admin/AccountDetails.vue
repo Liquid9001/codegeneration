@@ -40,6 +40,13 @@
               </form>
             </td>
           </tr>
+          <tr v-if="account.accountType === 'CHECKING'">
+            <th>Debitcard</th>
+            <td>
+              <button @click="createDebitCard" class="btn btn-success">Debitcard aanmaken</button>
+              <span v-if="latestDebitCardNumber" class="card-number">Nieuw pasnummer: {{ latestDebitCardNumber }}</span>
+            </td>
+          </tr>
         </tbody>
       </table>
       <div v-if="error" class="alert alert-danger">
@@ -68,7 +75,8 @@ export default {
       successMessage: null,
       dailyTransferLimit: null,
       absoluteTransferLimit: null,
-      checkingAccountPin: ''
+      checkingAccountPin: '',
+      latestDebitCardNumber: null
     };
   },
   async created() {
@@ -140,6 +148,26 @@ export default {
       } catch (error) {
         console.error('Error updating account PIN:', error);
         this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het bijwerken van de pincode.';
+      }
+    },
+    async createDebitCard() {
+      try {
+        this.error = null;
+        this.successMessage = null;
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const token = useAuthStore().token;
+        const accountId = this.$route.params.accountId;
+        const response = await axios.post(`${apiUrl}/accounts/${accountId}/cards`, {}, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        this.latestDebitCardNumber = response.data.publicCardNumber;
+        this.successMessage = `Betaalpas is aangemaakt met pasnummer ${response.data.publicCardNumber}.`;
+      } catch (error) {
+        console.error('Error creating debit card:', error);
+        this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het aanmaken van de betaalpas.';
       }
     },
     async deleteAccount() {
@@ -253,6 +281,10 @@ export default {
 .pin-form {
   display: flex;
   gap: 10px;
+}
+
+.card-number {
+  margin-left: 12px;
 }
 
 .table {
