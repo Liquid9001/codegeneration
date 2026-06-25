@@ -12,7 +12,9 @@ import nl.codegeneratie.els.annotations.AccountOwnerEmployeeOnly;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.dtos.AccountOverwritePinDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
+import nl.codegeneratie.els.dtos.DebitCardDTO;
 import nl.codegeneratie.els.service.AccountService;
+import nl.codegeneratie.els.service.DebitCardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +25,11 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
 
     private final AccountService accountService;
+    private final DebitCardService debitCardService;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, DebitCardService debitCardService) {
         this.accountService = accountService;
+        this.debitCardService = debitCardService;
     }
 
     @GetMapping("/{accountId}")
@@ -104,6 +108,34 @@ public class AccountController {
     public ResponseEntity<AccountDTO> updateCheckingAccountPin(@PathVariable Long accountId, @Valid @RequestBody AccountOverwritePinDTO overwritePinDTO) {
         AccountDTO updatedAccount = accountService.updateCheckingAccountPin(accountId, overwritePinDTO);
         return ResponseEntity.ok(updatedAccount);
+    }
+
+    @PostMapping("/{accountId}/cards")
+    @Operation(
+            summary = "Create debit card for checking account (employee only)",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Debit card created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DebitCardDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Debit cards can only be created for checking accounts"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Account not found"
+            )
+    })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<DebitCardDTO> createDebitCard(@PathVariable Long accountId) {
+        return ResponseEntity.ok(debitCardService.createDebitCard(accountId));
     }
 
     @DeleteMapping("/{accountId}")
