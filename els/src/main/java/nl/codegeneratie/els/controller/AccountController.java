@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import nl.codegeneratie.els.annotations.AccountOwnerEmployeeOnly;
 import nl.codegeneratie.els.dtos.AccountDTO;
+import nl.codegeneratie.els.dtos.AccountOverwritePinDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.service.AccountService;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +74,35 @@ public class AccountController {
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<AccountDTO> updateAccountTransferLimits(@PathVariable Long accountId, @Valid @RequestBody AccountTransferLimitsDTO limitsDTO) {
         AccountDTO updatedAccount = accountService.updateAccountTransferLimits(accountId, limitsDTO);
+        return ResponseEntity.ok(updatedAccount);
+    }
+
+    @PatchMapping("/{accountId}/pin")
+    @Operation(
+            summary = "Update checking account PIN (employee only)",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "PIN updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AccountDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid PIN or account type"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Account not found"
+            )
+    })
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<AccountDTO> updateCheckingAccountPin(@PathVariable Long accountId, @Valid @RequestBody AccountOverwritePinDTO overwritePinDTO) {
+        AccountDTO updatedAccount = accountService.updateCheckingAccountPin(accountId, overwritePinDTO);
         return ResponseEntity.ok(updatedAccount);
     }
 

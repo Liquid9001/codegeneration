@@ -4,6 +4,7 @@ import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.domain.policies.AccountPolicy;
+import nl.codegeneratie.els.dtos.AccountOverwritePinDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
@@ -53,6 +54,20 @@ public class AccountService {
         accountPolicy.enforceTransferLimitsMustBeValid(limitsDTO);
         account.setDailyTransferLimit(limitsDTO.getDailyTransferLimit());
         account.setAbsoluteTransferLimit(limitsDTO.getAbsoluteTransferLimit());
+        accountRepository.save(account);
+        return accountMapper.toAccountDTO(account);
+    }
+
+    public AccountDTO updateCheckingAccountPin(Long accountId, AccountOverwritePinDTO overwritePinDTO) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        if (account.getAccountType() != AccountType.CHECKING) {
+            throw new IllegalArgumentException("PIN can only be updated for checking accounts.");
+        }
+
+        validatePin(overwritePinDTO.getPin());
+        account.setPinHash(passwordEncoder.encode(overwritePinDTO.getPin()));
         accountRepository.save(account);
         return accountMapper.toAccountDTO(account);
     }
@@ -107,9 +122,23 @@ public class AccountService {
             throw new IllegalArgumentException("PIN is required for checking account creation.");
         }
 
-        if (!checkingAccountLimitsDTO.getPin().matches(PIN_PATTERN)) {
+        if (!isValidPin(checkingAccountLimitsDTO.getPin())) {
             throw new IllegalArgumentException("PIN must be exactly 4 digits.");
         }
+    }
+
+    private void validatePin(String pin) {
+        if (pin == null || pin.isBlank()) {
+            throw new IllegalArgumentException("PIN is required.");
+        }
+
+        if (!isValidPin(pin)) {
+            throw new IllegalArgumentException("PIN must be exactly 4 digits.");
+        }
+    }
+
+    private boolean isValidPin(String pin) {
+        return pin != null && pin.matches(PIN_PATTERN);
     }
 }
 
