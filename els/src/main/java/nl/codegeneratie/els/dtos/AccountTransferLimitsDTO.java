@@ -1,5 +1,6 @@
 package nl.codegeneratie.els.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -19,4 +20,12 @@ public class AccountTransferLimitsDTO {
     @PositiveOrZero
     @Schema(description = "Daily transfer limit", example = "10000.00")
     private BigDecimal dailyTransferLimit;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Schema(
+            description = "4 digit PIN for checking account creation",
+            example = "1234",
+            accessMode = Schema.AccessMode.WRITE_ONLY
+    )
+    private String pin;
 }

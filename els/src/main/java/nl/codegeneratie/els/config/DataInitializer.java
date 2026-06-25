@@ -117,6 +117,7 @@ public class DataInitializer implements CommandLineRunner {
             account1.setBalance(new BigDecimal("5000.00"));
             account1.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
             account1.setDailyTransferLimit(new BigDecimal("20000.00"));
+            account1.setPinHash(passwordEncoder.encode("1234"));
             account1.setActive(true);
             account1.setCreatedAt(LocalDateTime.parse("2024-01-15 10:30:00", formatter));
             accountRepository.save(account1);
@@ -139,6 +140,7 @@ public class DataInitializer implements CommandLineRunner {
             account3.setBalance(new BigDecimal("8500.50"));
             account3.setAbsoluteTransferLimit(new BigDecimal("10000.00"));
             account3.setDailyTransferLimit(new BigDecimal("20000.00"));
+            account3.setPinHash(passwordEncoder.encode("1234"));
             account3.setActive(true);
             account3.setCreatedAt(LocalDateTime.parse("2024-01-16 14:45:00", formatter));
             accountRepository.save(account3);
@@ -161,6 +163,7 @@ public class DataInitializer implements CommandLineRunner {
             atmAccount.setBalance(new BigDecimal("10000.00")); // €10,000 physical cash inside!
             atmAccount.setAbsoluteTransferLimit(new BigDecimal("0.00"));
             atmAccount.setDailyTransferLimit(new BigDecimal("999999.00")); // Machines don't have daily limits
+            atmAccount.setPinHash(passwordEncoder.encode("0000"));
             atmAccount.setActive(true);
             atmAccount.setCreatedAt(LocalDateTime.now());
             accountRepository.save(atmAccount);

@@ -36,6 +36,10 @@ public class Account {
     private BigDecimal dailyTransferLimit;
     private boolean active;
 
+    @JsonIgnore
+    @Column(name = "pin_hash")
+    private String pinHash;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

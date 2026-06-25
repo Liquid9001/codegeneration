@@ -14,6 +14,7 @@ import nl.codegeneratie.els.mappers.AccountMapper;
 import nl.codegeneratie.els.repository.AccountRepository;
 import nl.codegeneratie.els.security.SecurityUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -28,13 +29,16 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final Random random = new Random();
     private static final String IBAN_PREFIX = "NL00ELS0";
+    private static final String PIN_PATTERN = "\\d{4}";
     private final AccountMapper accountMapper;
     private final AccountPolicy accountPolicy;
+    private final PasswordEncoder passwordEncoder;
 
-    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AccountPolicy accountPolicy) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AccountPolicy accountPolicy, PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
         this.accountPolicy = accountPolicy;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AccountDTO getAccountById(Long accountId) {
@@ -62,6 +66,7 @@ public class AccountService {
 
     public void createDefaultAccountsIfNeeded(User user, AccountTransferLimitsDTO checkingAccountLimitsDTO,
                                               AccountTransferLimitsDTO savingsAccountLimitsDTO) {
+        validateCheckingAccountPin(checkingAccountLimitsDTO);
         accountPolicy.enforceTransferLimitsMustBeValid(checkingAccountLimitsDTO);
         accountPolicy.enforceTransferLimitsMustBeValid(savingsAccountLimitsDTO);
         // don't make two accounts if the user already has the default accounts
@@ -89,9 +94,22 @@ public class AccountService {
         account.setBalance(BigDecimal.ZERO);
         account.setAbsoluteTransferLimit(accountCreationDTO.getAbsoluteTransferLimit());
         account.setDailyTransferLimit(accountCreationDTO.getDailyTransferLimit());
+        if (accountType == AccountType.CHECKING) {
+            account.setPinHash(passwordEncoder.encode(accountCreationDTO.getPin()));
+        }
         account.setActive(true);
         account.setCreatedAt(LocalDateTime.now());
         return account;
+    }
+
+    private void validateCheckingAccountPin(AccountTransferLimitsDTO checkingAccountLimitsDTO) {
+        if (checkingAccountLimitsDTO == null || checkingAccountLimitsDTO.getPin() == null || checkingAccountLimitsDTO.getPin().isBlank()) {
+            throw new IllegalArgumentException("PIN is required for checking account creation.");
+        }
+
+        if (!checkingAccountLimitsDTO.getPin().matches(PIN_PATTERN)) {
+            throw new IllegalArgumentException("PIN must be exactly 4 digits.");
+        }
     }
 }
 
