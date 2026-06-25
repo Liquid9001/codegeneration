@@ -4,6 +4,7 @@ import nl.codegeneratie.els.domain.Account;
 import nl.codegeneratie.els.domain.User;
 import nl.codegeneratie.els.domain.enums.AccountType;
 import nl.codegeneratie.els.dtos.AccountDTO;
+import nl.codegeneratie.els.dtos.AccountOverwritePinDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
 import nl.codegeneratie.els.exceptions.AccountNotFoundException;
 import nl.codegeneratie.els.exceptions.AccountsAlreadyExistException;
@@ -203,6 +204,79 @@ class AccountServiceTest {
                 accountService.updateAccountTransferLimits(1L, invalidLimits)
         );
         verify(accountRepository, never()).save(account);
+    }
+
+    @Test
+    void updateCheckingAccountPinUpdatesHashedPinForCheckingAccount() {
+        AccountOverwritePinDTO overwritePinDTO = new AccountOverwritePinDTO();
+        overwritePinDTO.setPin("4321");
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
+
+        AccountDTO result = accountService.updateCheckingAccountPin(1L, overwritePinDTO);
+
+        assertNotNull(result);
+        assertNotNull(account.getPinHash());
+        assertNotEquals("4321", account.getPinHash());
+        assertTrue(passwordEncoder.matches("4321", account.getPinHash()));
+        verify(accountRepository).save(account);
+    }
+
+    @Test
+    void updateCheckingAccountPinRejectsMissingPin() {
+        AccountOverwritePinDTO overwritePinDTO = new AccountOverwritePinDTO();
+        overwritePinDTO.setPin(null);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                accountService.updateCheckingAccountPin(1L, overwritePinDTO));
+
+        assertEquals("PIN is required.", exception.getMessage());
+        verify(accountRepository, never()).save(any(Account.class));
+    }
+
+    @Test
+    void updateCheckingAccountPinRejectsInvalidPin() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        for (String invalidPin : List.of("12a4", "123", "12345")) {
+            AccountOverwritePinDTO overwritePinDTO = new AccountOverwritePinDTO();
+            overwritePinDTO.setPin(invalidPin);
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                    accountService.updateCheckingAccountPin(1L, overwritePinDTO));
+
+            assertEquals("PIN must be exactly 4 digits.", exception.getMessage());
+        }
+
+        verify(accountRepository, never()).save(any(Account.class));
+    }
+
+    @Test
+    void updateCheckingAccountPinRejectsSavingsAccount() {
+        Account savingsAccount = new Account();
+        savingsAccount.setId(2L);
+        savingsAccount.setAccountType(AccountType.SAVINGS);
+        AccountOverwritePinDTO overwritePinDTO = new AccountOverwritePinDTO();
+        overwritePinDTO.setPin("4321");
+        when(accountRepository.findById(2L)).thenReturn(Optional.of(savingsAccount));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                accountService.updateCheckingAccountPin(2L, overwritePinDTO));
+
+        assertEquals("PIN can only be updated for checking accounts.", exception.getMessage());
+        verify(accountRepository, never()).save(any(Account.class));
+    }
+
+    @Test
+    void updateCheckingAccountPinThrowsWhenAccountDoesNotExist() {
+        AccountOverwritePinDTO overwritePinDTO = new AccountOverwritePinDTO();
+        overwritePinDTO.setPin("4321");
+        when(accountRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(AccountNotFoundException.class, () ->
+                accountService.updateCheckingAccountPin(99L, overwritePinDTO));
+        verify(accountRepository, never()).save(any(Account.class));
     }
 
     @Test
