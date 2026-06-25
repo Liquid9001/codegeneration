@@ -11,6 +11,10 @@
         <input type="text" id="checkingAccountDailyLimit" v-model="checkingAccount.dailyTransferLimit" required />
       </div>
       <div class="form-group">
+        <label for="checkingAccountPin">Pincode Betaalrekening: (Voer 4 cijfers in)</label>
+        <input type="password" id="checkingAccountPin" v-model="checkingAccount.pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="Voer 4 cijfers in" style="color: white;" title="Pincode moet precies 4 cijfers zijn."/>
+      </div>
+      <div class="form-group">
         <label for="savingsAccountAbsoluteLimit">Absoluut betaallimiet Spaarrekening:</label>
         <input type="text" id="savingsAccountAbsoluteLimit" v-model="savingsAccount.absoluteTransferLimit" required />
       </div>
@@ -37,7 +41,8 @@ export default {
     return {
       checkingAccount: {
         absoluteTransferLimit: '',
-        dailyTransferLimit: ''
+        dailyTransferLimit: '',
+        pin: ''
       },
       savingsAccount: {
         absoluteTransferLimit: '',
@@ -132,7 +137,17 @@ input[type="text"] {
   color: white;
 }
 
-input[type="text"]:focus {
+input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
   outline: none;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
