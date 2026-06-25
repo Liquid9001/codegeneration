@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.codegeneratie.els.dtos.AccountDTO;
 import nl.codegeneratie.els.dtos.AccountOverwritePinDTO;
 import nl.codegeneratie.els.dtos.AccountTransferLimitsDTO;
+import nl.codegeneratie.els.dtos.DebitCardDTO;
 import nl.codegeneratie.els.exceptions.GlobalExceptionHandler;
 import nl.codegeneratie.els.service.AccountService;
+import nl.codegeneratie.els.service.DebitCardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -27,15 +29,17 @@ class AccountControllerTest {
 
     private MockMvc mockMvc;
     private AccountService accountService;
+    private DebitCardService debitCardService;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         accountService = mock(AccountService.class);
+        debitCardService = mock(DebitCardService.class);
         objectMapper = new ObjectMapper();
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
-        mockMvc = MockMvcBuilders.standaloneSetup(new AccountController(accountService))
+        mockMvc = MockMvcBuilders.standaloneSetup(new AccountController(accountService, debitCardService))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setValidator(validator)
                 .build();
@@ -111,6 +115,37 @@ class AccountControllerTest {
                 .content("{\"pin\":\"4321\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("PIN can only be updated for checking accounts."));
+    }
+
+    @Test
+    void createDebitCard() throws Exception {
+        DebitCardDTO debitCardDTO = new DebitCardDTO();
+        debitCardDTO.setId(10L);
+        debitCardDTO.setAccountId(1L);
+        debitCardDTO.setPublicCardNumber(1);
+        when(debitCardService.createDebitCard(1L)).thenReturn(debitCardDTO);
+
+        mockMvc.perform(post("/accounts/1/cards"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10L))
+                .andExpect(jsonPath("$.accountId").value(1L))
+                .andExpect(jsonPath("$.publicCardNumber").value(1))
+                .andExpect(jsonPath("$.pin").doesNotExist())
+                .andExpect(jsonPath("$.pinHash").doesNotExist())
+                .andExpect(jsonPath("$.uuid").doesNotExist())
+                .andExpect(jsonPath("$.account").doesNotExist());
+
+        verify(debitCardService).createDebitCard(1L);
+    }
+
+    @Test
+    void createDebitCardRejectsSavingsAccountWithBadRequest() throws Exception {
+        when(debitCardService.createDebitCard(2L))
+                .thenThrow(new IllegalArgumentException("Debit cards can only be created for checking accounts."));
+
+        mockMvc.perform(post("/accounts/2/cards"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Debit cards can only be created for checking accounts."));
     }
 
     @Test
