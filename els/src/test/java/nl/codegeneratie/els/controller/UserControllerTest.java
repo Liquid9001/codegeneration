@@ -191,7 +191,8 @@ class UserControllerTest {
                             {
                               "checkingAccount": {
                                 "dailyTransferLimit": 5000,
-                                "absoluteTransferLimit": 10000
+                                "absoluteTransferLimit": 10000,
+                                "pin": "1234"
                               },
                               "savingsAccount": {
                                 "dailyTransferLimit": 2000,

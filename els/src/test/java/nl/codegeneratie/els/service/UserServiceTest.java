@@ -246,6 +246,7 @@ class UserServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         UserTransferLimitsDTO approvalDTO = new UserTransferLimitsDTO();
         approvalDTO.setCheckingAccount(new AccountTransferLimitsDTO());
+        approvalDTO.getCheckingAccount().setPin("1234");
         approvalDTO.setSavingsAccount(new AccountTransferLimitsDTO());
         UserWithAccountsDTO result = userService.approveUser(user.getId(), approvalDTO);
         assertTrue(user.isApproved());
@@ -257,6 +258,7 @@ class UserServiceTest {
         when(userRepository.findById(42L)).thenReturn(Optional.empty());
         UserTransferLimitsDTO approvalDTO = new UserTransferLimitsDTO();
         approvalDTO.setCheckingAccount(new AccountTransferLimitsDTO());
+        approvalDTO.getCheckingAccount().setPin("1234");
         approvalDTO.setSavingsAccount(new AccountTransferLimitsDTO());
         assertThrows(UserNotFoundException.class, () -> userService.approveUser(42L, approvalDTO));
     }
@@ -305,6 +307,7 @@ class UserServiceTest {
                 passwordEncoder);
         UserTransferLimitsDTO limitsDTO = new UserTransferLimitsDTO();
         limitsDTO.setCheckingAccount(new AccountTransferLimitsDTO());
+        limitsDTO.getCheckingAccount().setPin("1234");
         limitsDTO.setSavingsAccount(new AccountTransferLimitsDTO());
         UserWithAccountsDTO result = userService.approveUser(user.getId(), limitsDTO);
         assertTrue(user.isApproved());
