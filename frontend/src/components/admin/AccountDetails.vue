@@ -31,10 +31,22 @@
             <th>Absolute Overboekingslimiet</th>
             <td><input v-model="absoluteTransferLimit" type="number" step="0.01" class="form-control"></td>
           </tr>
+          <tr v-if="account.accountType === 'CHECKING'">
+            <th>Pincode Betaalrekening</th>
+            <td>
+              <form @submit.prevent="updatePin" class="pin-form">
+                <input v-model="checkingAccountPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="format example = 6731" title="Pincode moet precies 4 cijfers zijn." class="form-control">
+                <button type="submit" class="btn btn-success">Pincode bijwerken</button>
+              </form>
+            </td>
+          </tr>
         </tbody>
       </table>
       <div v-if="error" class="alert alert-danger">
         {{ error }}
+      </div>
+      <div v-if="successMessage" class="alert alert-success">
+        {{ successMessage }}
       </div>
       <button @click="updateTransferLimits" class="btn btn-success">Overboekingslimieten bijwerken</button>
       <button @click="deleteAccount" class="btn btn-danger">Bankrekening verwijderen</button>
@@ -53,8 +65,10 @@ export default {
       account: null,
       loading: true,
       error: null,
+      successMessage: null,
       dailyTransferLimit: null,
-      absoluteTransferLimit: null
+      absoluteTransferLimit: null,
+      checkingAccountPin: ''
     };
   },
   async created() {
@@ -84,6 +98,8 @@ export default {
     },
     async updateTransferLimits() {
       try {
+        this.error = null;
+        this.successMessage = null;
         const apiUrl = import.meta.env.VITE_API_URL;
         const token = useAuthStore().token;
         const accountId = this.$route.params.accountId;
@@ -103,8 +119,33 @@ export default {
         this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het bijwerken van de overboekingslimieten.';
       }
     },
+    async updatePin() {
+      try {
+        this.error = null;
+        this.successMessage = null;
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const token = useAuthStore().token;
+        const accountId = this.$route.params.accountId;
+        const response = await axios.patch(`${apiUrl}/accounts/${accountId}/pin`, {
+          pin: this.checkingAccountPin
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        this.account = response.data;
+        this.checkingAccountPin = '';
+        this.successMessage = 'Pincode is bijgewerkt.';
+      } catch (error) {
+        console.error('Error updating account PIN:', error);
+        this.error = error.response?.data?.message || 'Er is een fout opgetreden bij het bijwerken van de pincode.';
+      }
+    },
     async deleteAccount() {
       try {
+        this.error = null;
+        this.successMessage = null;
         const apiUrl = import.meta.env.VITE_API_URL;
         const token = useAuthStore().token;
         const accountId = this.$route.params.accountId;
@@ -207,6 +248,11 @@ export default {
 
 .alert {
   margin-top: 20px;
+}
+
+.pin-form {
+  display: flex;
+  gap: 10px;
 }
 
 .table {

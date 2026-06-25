@@ -12,7 +12,7 @@
       </div>
       <div class="form-group">
         <label for="checkingAccountPin">Pincode Betaalrekening: (Voer 4 cijfers in)</label>
-        <input type="password" id="checkingAccountPin" v-model="checkingAccount.pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="Voer 4 cijfers in" style="color: white;" title="Pincode moet precies 4 cijfers zijn."/>
+        <input type="password" id="checkingAccountPin" v-model="checkingAccount.pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="format example = 6731" style="color: white;" title="Pincode moet precies 4 cijfers zijn."/>
       </div>
       <div class="form-group">
         <label for="savingsAccountAbsoluteLimit">Absoluut betaallimiet Spaarrekening:</label>
